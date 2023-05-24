@@ -10,7 +10,7 @@
     <h3>Probabilities:</h3>
     <ul>
       {% for label, prob in result.probabilities.items() %}
-      <li>{{ label }}: {{ prob }}</li>
+      <li>{{ label }}: {{ "%.2f"|format(prob) }}</li>
       {% endfor %}
     </ul>
   </body>
