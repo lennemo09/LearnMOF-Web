@@ -4,6 +4,8 @@ Batch image inference and database interface for LearnMOF project - a joint cola
 # Required packages
 ```
 PyTorch (torch + torchvision)
-Flask
 PIL (Pillow)
+Plotly
+Pandas
+Flask
 ```
