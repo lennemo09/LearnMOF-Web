@@ -61,57 +61,24 @@ def upload():
     
     # Create the bar chart data
     labels = list(class_names.values())
+    labels[0], labels[1] = labels[1], labels[0]
     probabilities = prediction.tolist()
-    colors = ['rgb(31, 119, 180)', 'rgb(255, 127, 14)', 'rgb(44, 160, 44)']  # Customize the colors if needed
+    probabilities[0], probabilities[1] = probabilities[1], probabilities[0]
+    colors = ['rgb(40, 20, 255)', 'rgb(130, 232, 133)', 'rgb(209, 65, 65)']  # Customize the colors if needed
 
-    names_col = ['Class', '#','Percentage']
+    names_col = ['Class', '#','Probability']
     dat = [[labels[i], 0, probabilities[i]] for i in range(len(labels))]
     plot_df = pd.DataFrame(data=dat,columns=names_col)
 
-    fig = px.bar(plot_df, x='Percentage', y='#', color='Class' ,title='Classification probabilities', orientation='h',
-                 height=100, hover_data={"Class":True,"Percentage":True,"#":False})
+    fig = px.bar(plot_df, x='Probability', y='#', color='Class' ,title='Classification probabilities', orientation='h',
+                 height=100, hover_data={"Class":True,"Probability":True,"#":False},
+                 color_discrete_sequence=colors)
     
-    fig.update_layout(margin=dict(l=0,r=0,b=0,t=0),
+    fig.update_layout(template='simple_white',margin=dict(l=0,r=0,b=0,t=0),
                      xaxis_range=[0,1])
     
     # Set the y axis visibility OFF
     fig.update_yaxes(title='y', visible=False, showticklabels=False)
-
-    # 
-    # data = [
-    #     go.Bar(
-    #         x=["probabilities"],
-    #         y=[probabilities[0]],
-    #         orientation='h',
-    #         marker=dict(color=colors)
-    #     ),
-
-    #     go.Bar(
-    #         x=["probabilities"],
-    #         y=[probabilities[1]],
-    #         orientation='h',
-    #         marker=dict(color=colors)
-    #     ),
-
-    #     go.Bar(
-    #         x=["probabilities"],
-    #         y=[probabilities[2]],
-    #         orientation='h',
-    #         marker=dict(color=colors)
-    #     )
-    # ]
-
-    # # Define the layout of the chart
-    # layout = go.Layout(
-    #     title='Class Probabilities',
-    #     xaxis=dict(title='Probability'),
-    #     yaxis=dict(title='Class'),
-    #     hovermode='closest'
-    # )
-
-    # # Create the Figure object
-    # fig = go.Figure(data=data, layout=layout)
-    # fig.update_layout(barmode='stack')
 
     # Convert the Figure object to an HTML string
     chart_html = fig.to_html(full_html=False)
@@ -136,9 +103,19 @@ def upload():
     result = {
         'image_path': file_path,
         'predicted_class': predicted_class,
-        'probabilities': {class_names[i]: prediction[i] for i in range(3)},
+        'probabilities': {class_names[i]: prediction[i] for i in range(len(prediction))},
         'chart_html': chart_html
     }
+
+    new_db_entry = {
+        'image_name' : os.path.basename(file_path),
+        'image_path': file_path,
+        'assigned-label': predicted_class,
+        'approved' : False,
+        'probabilities': {class_names[i]: prediction[i] for i in range(len(prediction))},
+    }
+
+    print(new_db_entry)
 
     return render_template('result.html', result=result)
 
