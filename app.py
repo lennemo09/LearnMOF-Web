@@ -66,16 +66,17 @@ def upload():
     probabilities[0], probabilities[1] = probabilities[1], probabilities[0]
     colors = ['rgb(40, 20, 255)', 'rgb(130, 232, 133)', 'rgb(209, 65, 65)']  # Customize the colors if needed
 
+    # Drawing the stacked bar chart horizontally
     names_col = ['Class', '#','Probability']
-    dat = [[labels[i], 0, probabilities[i]] for i in range(len(labels))]
-    plot_df = pd.DataFrame(data=dat,columns=names_col)
+    plotting_data = [[labels[i], 0, probabilities[i]] for i in range(len(labels))]
+    plot_df = pd.DataFrame(data=plotting_data,columns=names_col)
 
     fig = px.bar(plot_df, x='Probability', y='#', color='Class' ,title='Classification probabilities', orientation='h',
                  height=100, hover_data={"Class":True,"Probability":True,"#":False},
                  color_discrete_sequence=colors)
     
     fig.update_layout(template='simple_white',margin=dict(l=0,r=0,b=0,t=0),
-                     xaxis_range=[0,1])
+                     xaxis_range=[0,1], showlegend=False)
     
     # Set the y axis visibility OFF
     fig.update_yaxes(title='y', visible=False, showticklabels=False)
