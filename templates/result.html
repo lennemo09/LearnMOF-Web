@@ -5,8 +5,8 @@
   </head>
   <body>
     <h1>Result</h1>
-    <img src="{{ result.image_path }}" alt="Uploaded Image" width="300">
-    <p>Predicted Class: {{ result.predicted_class }}</p>
+    <img src="{{ result.image_path }}" alt="Uploaded Image" width="800">
+    <p>Predicted class: {{ result.predicted_class }}</p>
     <h3>Probabilities:</h3>
     <ul>
       {% for label, prob in result.probabilities.items() %}
