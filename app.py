@@ -1,3 +1,4 @@
+import shutil
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 import os
 import pandas as pd
@@ -12,6 +13,7 @@ import pandas as pd
 import pymongo
 
 MODEL_NAME = "LearnMOF_MODEL_BATCH5_tested_acc95"
+ALLOWED_EXTENSIONS = ('jpg', 'jpeg', 'png', 'gif')
 
 MODEL_DIR = "."
 RESULTS_DIR = "results"
@@ -37,7 +39,7 @@ def index():
 def upload():
     global image_paths
     image_paths = []
-    
+
      # Check if the 'images' field is present in the request files
     if 'images' not in request.files:
         return 'No images uploaded', 400
@@ -68,17 +70,45 @@ def upload():
             file_path = app.config['UPLOAD_FOLDER'] + '/' + file.filename
             file.save(file_path)
 
-            # Extract the files from the zip archive
+            # Extract the zip file
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                zip_ref.extractall(app.config['UPLOAD_FOLDER'])
+                zip_ref.extractall('temp')
+
+            # Remove the zip file
+            os.remove(file_path)
+
+            # Check the extracted files for directories and non-image files
+            extracted_files = os.listdir('temp')
+            image_files = []
+            for extracted_file in extracted_files:
+                extracted_file_path = os.path.join('temp', extracted_file)
+                if os.path.isdir(extracted_file_path):
+                    # Raise an error if a directory is found
+                    return 'Zip file contains directories', 400
+
+                if extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
+                    image_files.append(extracted_file_path)
+
+            # Raise an error if no image files are found
+            if not image_files:
+                return 'Zip file does not contain any images', 400
+
+            # Move the image files to the UPLOADS_DIR directory
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            for image_file in image_files:
+                shutil.copy(image_file, UPLOAD_FOLDER)
 
             # Get the list of extracted image files
             extracted_files = [
                 str(app.config['UPLOAD_FOLDER']) + '/' + file
                 for file in zip_ref.namelist()
-                if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))
+                if file.lower().endswith(ALLOWED_EXTENSIONS)
             ]
+
+            # Update the file paths to point to the extracted images
+            # extracted_files = [os.path.join(UPLOAD_FOLDER, os.path.basename(image_file)) for image_file in image_files]
             image_paths.extend(extracted_files)
+            
         elif file.filename.endswith('.jpg'):
             file_path = app.config['UPLOAD_FOLDER'] + '/' + file.filename
             file.save(file_path)
