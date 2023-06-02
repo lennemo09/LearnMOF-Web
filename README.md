@@ -7,5 +7,6 @@ PyTorch (torch + torchvision)
 PIL (Pillow)
 Plotly
 Pandas
+Pymongo
 Flask
 ```
