@@ -82,8 +82,9 @@ def upload():
             image_files = []
             for extracted_file in extracted_files:
                 extracted_file_path = os.path.join('temp', extracted_file)
-                if os.path.isdir(extracted_file_path):
+                if os.path.isdir(extracted_file_path) or not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
                     # Raise an error if a directory is found
+                    os.remove(extracted_file_path)
                     return 'Zip file contains directories', 400
 
                 if extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
