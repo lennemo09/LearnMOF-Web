@@ -58,6 +58,8 @@ def upload():
         if metadata_file.filename.endswith('.csv'):
             # Process the metadata CSV file
             metadata_df = pd.read_csv(metadata_file)
+        # else:
+        #     return 'Metadata should be in CSV format', 400
 
     for file in images:
         # Check if the file has a filename
@@ -79,43 +81,39 @@ def upload():
 
             # Check the extracted files for directories and non-image files
             extracted_files = os.listdir('temp')
-            image_files = []
+            new_image_files = []
             for extracted_file in extracted_files:
-                extracted_file_path = os.path.join('temp', extracted_file)
+                extracted_file_path = 'temp' + '/' + extracted_file
+
                 if os.path.isdir(extracted_file_path) or not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
                     # Raise an error if a directory is found
                     os.remove(extracted_file_path)
                     return 'Zip file contains directories', 400
-
+                
                 if extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
-                    image_files.append(extracted_file_path)
+                    new_image_files.append(extracted_file_path)
 
             # Raise an error if no image files are found
-            if not image_files:
+            if not new_image_files:
                 return 'Zip file does not contain any images', 400
 
             # Move the image files to the UPLOAD_FOLDER directory
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            for image_file in image_files:
+            for image_file in new_image_files:
                 # Check if file with same name exists
-                destination_path = os.path.join(UPLOAD_FOLDER, os.path.basename(image_file))
+                if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
+                    continue
+
+                destination_path = UPLOAD_FOLDER + '/' + os.path.basename(image_file)
 
                 if not os.path.exists(destination_path):
                     shutil.move(image_file, UPLOAD_FOLDER)
+                    image_paths.append(destination_path)
                 # If filename already exists, check if same image, if not same image add a suffix
                 else:
-                    move_image_with_suffix(image_file, UPLOAD_FOLDER)
-
-            # Get the list of extracted image files
-            extracted_files = [
-                str(app.config['UPLOAD_FOLDER']) + '/' + file
-                for file in zip_ref.namelist()
-                if file.lower().endswith(ALLOWED_EXTENSIONS)
-            ]
-
-            # Update the file paths to point to the extracted images
-            # extracted_files = [os.path.join(UPLOAD_FOLDER, os.path.basename(image_file)) for image_file in image_files]
-            image_paths.extend(extracted_files)
+                    new_path = rename_image_with_suffix(image_file, UPLOAD_FOLDER)
+                    shutil.move(image_file, new_path)
+                    image_paths.append(new_path)
             
         elif file.filename.endswith('.jpg'):
             file_path = app.config['UPLOAD_FOLDER'] + '/' + file.filename
@@ -238,9 +236,9 @@ def is_same_image(image_path1, image_path2):
 
     return True
 
-def move_image_with_suffix(image_file, destination_dir):
+def rename_image_with_suffix(image_file, destination_dir):
     filename = os.path.basename(image_file)
-    destination_path = os.path.join(destination_dir, filename)
+    destination_path = destination_dir + '/' + filename
 
     if os.path.exists(destination_path):
         # Check if the existing image is the same as the one being moved
@@ -250,7 +248,7 @@ def move_image_with_suffix(image_file, destination_dir):
             while True:
                 new_filename = f"{os.path.splitext(filename)[0]}_{suffix}{os.path.splitext(filename)[1]}"
                 print(f'Image with name exists {filename} with different content, renaming to {new_filename}.')
-                new_destination_path = os.path.join(destination_dir, new_filename)
+                new_destination_path = destination_dir + '/' + new_filename
                 if not os.path.exists(new_destination_path):
                     break
                 suffix += 1
@@ -258,7 +256,8 @@ def move_image_with_suffix(image_file, destination_dir):
             destination_path = new_destination_path
 
     # Move the image to the destination directory
-    shutil.move(image_file, destination_path)
+    return destination_path
+    # shutil.move(image_file, destination_path)
 
 if __name__ == '__main__':
     client = pymongo.MongoClient('mongodb://localhost:27017/')
