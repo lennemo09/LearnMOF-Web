@@ -153,7 +153,7 @@ def result(index):
     labels[0], labels[1] = labels[1], labels[0]
     probabilities = prediction.tolist()
     probabilities[0], probabilities[1] = probabilities[1], probabilities[0]
-    colors = ['rgb(40, 20, 255)', 'rgb(130, 232, 133)', 'rgb(209, 65, 65)']  # Customize the colors if needed
+    colors = ['rgb(52, 129, 237)', 'rgb(130, 232, 133)', 'rgb(224, 93, 70)']  # Customize the colors if needed
 
     # Drawing the stacked bar chart horizontally
     names_col = ['Class', '#','Probability']
