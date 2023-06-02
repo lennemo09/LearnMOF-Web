@@ -94,10 +94,17 @@ def upload():
             if not image_files:
                 return 'Zip file does not contain any images', 400
 
-            # Move the image files to the UPLOADS_DIR directory
+            # Move the image files to the UPLOAD_FOLDER directory
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             for image_file in image_files:
-                shutil.copy(image_file, UPLOAD_FOLDER)
+                # Check if file with same name exists
+                destination_path = os.path.join(UPLOAD_FOLDER, os.path.basename(image_file))
+
+                if not os.path.exists(destination_path):
+                    shutil.move(image_file, UPLOAD_FOLDER)
+                # If filename already exists, check if same image, if not same image add a suffix
+                else:
+                    move_image_with_suffix(image_file, UPLOAD_FOLDER)
 
             # Get the list of extracted image files
             extracted_files = [
@@ -212,6 +219,46 @@ def result(index):
 @app.route('/<path:filename>')
 def uploaded_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+def is_same_image(image_path1, image_path2):
+    image1 = Image.open(image_path1)
+    image2 = Image.open(image_path2)
+
+    if image1.size != image2.size:
+        return False
+
+    pixels1 = image1.load()
+    pixels2 = image2.load()
+
+    width, height = image1.size
+    for x in range(width):
+        for y in range(height):
+            if pixels1[x, y] != pixels2[x, y]:
+                return False
+
+    return True
+
+def move_image_with_suffix(image_file, destination_dir):
+    filename = os.path.basename(image_file)
+    destination_path = os.path.join(destination_dir, filename)
+
+    if os.path.exists(destination_path):
+        # Check if the existing image is the same as the one being moved
+        if not is_same_image(image_file, destination_path):
+            # Generate a new filename with a suffix
+            suffix = 1
+            while True:
+                new_filename = f"{os.path.splitext(filename)[0]}_{suffix}{os.path.splitext(filename)[1]}"
+                print(f'Image with name exists {filename} with different content, renaming to {new_filename}.')
+                new_destination_path = os.path.join(destination_dir, new_filename)
+                if not os.path.exists(new_destination_path):
+                    break
+                suffix += 1
+
+            destination_path = new_destination_path
+
+    # Move the image to the destination directory
+    shutil.move(image_file, destination_path)
 
 if __name__ == '__main__':
     client = pymongo.MongoClient('mongodb://localhost:27017/')
