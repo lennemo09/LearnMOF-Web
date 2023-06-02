@@ -6,7 +6,11 @@
   <body>
     <h1>Image Upload</h1>
     <form method="POST" enctype="multipart/form-data" action="/upload">
-      <input type="file" name="file" accept="image/*">
+      <h2>Upload images</h2>
+      <input type="file" name="images" accept=".zip, image/*" multiple>
+      <h2>Upload metadata</h2>
+      <input type="file" name="metadata" accept=".csv">
+      
       <input type="submit" value="Upload">
     </form>
   </body>
