@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from pathlib import Path
 import torch
+from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
@@ -24,12 +25,30 @@ MODEL_PATH = MODEL_DIR + "/" + MODEL_NAME
 SEED = 1337
 IMG_SIZE = 512
 
-BATCH_SIZE = 1  # Number of images per batch to load into memory, since we are testing only a couple of images, 1 is enough
+BATCH_SIZE = 4  # Number of images per batch to load into memory, since we are testing only a couple of images, 1 is enough
 NUM_WORKERS = 1 # Number of CPU cores to load images
 
 app = Flask(__name__, static_url_path='/static')
 
 image_paths = []  # Global list to store the paths of uploaded images
+
+class ImageDataset(Dataset):
+    def __init__(self, image_paths):
+        self.image_paths = image_paths
+        self.transform = transforms.Compose([
+            transforms.Resize(size=(IMG_SIZE,IMG_SIZE)),
+            transforms.ToTensor(), # this also converts all pixel values from 0 to 255 to be between 0.0 and 1.0
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # Normalize the images
+        ])
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, index):
+        image_path = self.image_paths[index]
+        image = Image.open(image_path)
+        image = self.transform(image)
+        return image, image_path
 
 @app.route('/')
 def index():
@@ -128,8 +147,90 @@ def upload():
                 image_paths.append(new_path)
 
     # Redirect to the first result page
-    return redirect(url_for('result', index=0))
+    return redirect(url_for('process_images'))
 
+@app.route('/process_images')
+def process_images():
+    # Load images from the UPLOADS_DIR or any other appropriate directory
+
+    # Perform inference on the images using PyTorch model
+    # Load images into a PyTorch dataset
+    dataset = ImageDataset(image_paths)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
+
+    # Create empty lists to store the results
+    predicted_classes_list = []
+    probabilities_list = []
+
+     # Iterate over the batches in the dataloader
+    for images, image_paths_batch in dataloader:
+        # Perform inference on the batch of images using your model
+        with torch.no_grad():
+            images = images.to(device)
+            outputs = model(images)
+            # Extract the predicted class and probabilities from the outputs
+            # Adjust the code according to the structure of your model's output
+            predicted_classes_batch = torch.argmax(outputs, dim=1)
+            probabilities_batch = torch.nn.functional.softmax(outputs, dim=1)
+            
+        # Append the batch results to the lists
+        predicted_classes_list.extend(predicted_classes_batch.tolist())
+        probabilities_list.extend(probabilities_batch.tolist())
+        
+        # Store the results in the MongoDB database for each image in the batch
+        for i, image_path in enumerate(image_paths_batch):
+            # Create a new document for the image result
+            probs = probabilities_batch[i].tolist()
+
+            # MongoDB Document format:
+            # {
+            #   file_path : string;
+            #   image_name : string;
+            #   predicted_probabilities: [float,float,float]|null;
+            #   assigned_label: string;
+            #   label_approved: boolean;
+            #   linker: string|null;
+            #   startdate : {year:int,month:int,day:int}|null;
+            #   plate_index : int|null;
+            #   image_index : int|null;
+            #   magnification: int|null;
+            #   conditions: {
+            #       time: int|null;
+            #       temp: float|null;
+            #       ctot: float|null;
+            #       loglmratio: float|null;
+            #   }
+            # }
+
+            image_name = os.path.basename(image_path)
+
+            # Check if an entry with the same image_name already exists in the database
+            existing_entry = collection.find_one({'image_name': image_name})
+            
+            if existing_entry:
+                # Update the existing entry with the new result
+                collection.update_one(
+                    {'_id': existing_entry['_id']},
+                    {'$set': {
+                        'assigned_label': class_names[predicted_classes_batch[i].item()],
+                        'approved': False,
+                        'probabilities': {class_names[j]: float(probs[j]) for j in range(len(probs))}
+                    }}
+                )
+            else:
+                # Create a new document for the image result
+                new_db_entry = {
+                    'image_name': image_name,
+                    'assigned_label': class_names[predicted_classes_batch[i].item()],
+                    'approved': False,
+                    'probabilities': {class_names[j]: float(probs[j]) for j in range(len(probs))}
+                }
+
+                # Insert the result document into the database collection
+                collection.insert_one(new_db_entry)
+    
+    # Redirect to the 'result' page
+    return redirect(url_for('result', index=0))
 
 @app.route('/result/<int:index>')
 def result(index):
@@ -139,32 +240,32 @@ def result(index):
         return 'Invalid index', 400
 
     file_path = image_paths[page_index]
+    file_name = os.path.basename(file_path)
 
-    # Load and preprocess the image
-    img = Image.open(file_path)
+    result_document = collection.find_one({'image_name': file_name})
 
-    tensor_img = test_transform(img).unsqueeze(0)
-    tensor_img = tensor_img.to(device)
-    prediction = torch.nn.functional.softmax(model(tensor_img),dim=1).cpu().detach().numpy().flatten()
+    # Check if the result document exists
+    if result_document is None:
+        return f'Result not found for {file_name}', 404
 
-    print(prediction)
-
-    predicted_class = class_names[prediction.argmax()]
+    # Extract the result information from the document
+    predicted_class = result_document['assigned_label']
+    probabilities = result_document['probabilities']
+    probabilities_list = list(probabilities.values())
 
     print(predicted_class)
 
-    print(f"Image {file_path}: Predicted class: {class_names[prediction.argmax()]} with probabilities: {prediction}.")
+    print(f"Image {file_path}: Predicted class: {predicted_class} with probabilities: {probabilities}.")
     
     # Create the bar chart data
     labels = list(class_names.values())
     labels[0], labels[1] = labels[1], labels[0]
-    probabilities = prediction.tolist()
-    probabilities[0], probabilities[1] = probabilities[1], probabilities[0]
+    probabilities_list[0], probabilities_list[1] = probabilities_list[1], probabilities_list[0]
     colors = ['rgb(52, 129, 237)', 'rgb(130, 232, 133)', 'rgb(224, 93, 70)']  # Customize the colors if needed
 
     # Drawing the stacked bar chart horizontally
     names_col = ['Class', '#','Probability']
-    plotting_data = [[labels[i], 0, probabilities[i]] for i in range(len(labels))]
+    plotting_data = [[labels[i], 0, probabilities_list[i]] for i in range(len(labels))]
     plot_df = pd.DataFrame(data=plotting_data,columns=names_col)
 
     fig = px.bar(plot_df, x='Probability', y='#', color='Class' ,title='Classification probabilities', orientation='h',
@@ -180,45 +281,14 @@ def result(index):
     # Convert the Figure object to an HTML string
     chart_html = fig.to_html(full_html=False)
 
-    # MongoDB Document format:
-    # {
-    #   file_path : string;
-    #   image_name : string;
-    #   predicted_probabilities: [float,float,float]|null;
-    #   assigned_label: string;
-    #   label_approved: boolean;
-    #   linker: string|null;
-    #   startdate : {year:int,month:int,day:int}|null;
-    #   plate_index : int|null;
-    #   image_index : int|null;
-    #   magnification: int|null;
-    #   conditions: {
-    #       time: int|null;
-    #       temp: float|null;
-    #       ctot: float|null;
-    #       loglmratio: float|null;
-    #   }
-    # }
     result = {
         'image_path': file_path,
         'predicted_class': predicted_class,
-        'probabilities': {class_names[i]: prediction[i] for i in range(len(prediction))},
+        'probabilities': probabilities,
         'chart_html': chart_html,
         'index': page_index,
         'batch_size': len(image_paths)
     }
-    print(f"#### INDEX: {index} | {result['index']}")
-    new_db_entry = {
-        'image_name' : os.path.basename(file_path),
-        'image_path': file_path,
-        'assigned-label': predicted_class,
-        'approved' : False,
-        'probabilities': {class_names[i]: float(prediction[i]) for i in range(len(prediction))},
-    }
-
-    # print(new_db_entry)
-
-    # insert_result = collection.insert_one(new_db_entry)
 
     return render_template('result.html', result=result)
 
@@ -271,6 +341,7 @@ if __name__ == '__main__':
     client = pymongo.MongoClient('mongodb://localhost:27017/')
     db = client['learnmof']
     collection = db['data']
+    # collection.drop()
 
     print(db)
 
@@ -285,14 +356,6 @@ if __name__ == '__main__':
 
     model = torch.load(MODEL_NAME,map_location=device)
     model = model.to(device)
-
-    test_transforms_list = [
-        transforms.Resize(size=(IMG_SIZE,IMG_SIZE)),
-        transforms.ToTensor(), # this also converts all pixel values from 0 to 255 to be between 0.0 and 1.0
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # Normalize the images
-    ] 
-
-    test_transform = transforms.Compose(test_transforms_list)
 
     # Define the class names and the target directories
     class_names = {
