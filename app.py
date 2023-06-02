@@ -100,12 +100,12 @@ def upload():
             # Move the image files to the UPLOAD_FOLDER directory
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             for image_file in new_image_files:
-                # Check if file with same name exists
                 if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
                     continue
 
                 destination_path = UPLOAD_FOLDER + '/' + os.path.basename(image_file)
 
+                # Check if file with same name exists
                 if not os.path.exists(destination_path):
                     shutil.move(image_file, UPLOAD_FOLDER)
                     image_paths.append(destination_path)
@@ -116,9 +116,16 @@ def upload():
                     image_paths.append(new_path)
             
         elif file.filename.endswith('.jpg'):
+            # Name clashing for jpg uploads
             file_path = app.config['UPLOAD_FOLDER'] + '/' + file.filename
-            file.save(file_path)
-            image_paths.append(file_path)
+
+            if not os.path.exists(file_path):
+                file.save(file_path)
+                image_paths.append(file_path)
+            else:
+                new_path = rename_image_with_suffix(file_path, UPLOAD_FOLDER)
+                file.save(new_path)
+                image_paths.append(new_path)
 
     # Redirect to the first result page
     return redirect(url_for('result', index=0))
