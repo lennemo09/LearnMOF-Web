@@ -126,12 +126,12 @@ def upload():
 
 @app.route('/result/<int:index>')
 def result(index):
-    index = int(request.args.get('index', 0))
+    page_index = index % len(image_paths)
 
-    if index < 0 or index >= len(image_paths):
+    if page_index < 0 or page_index >= len(image_paths):
         return 'Invalid index', 400
 
-    file_path = image_paths[index]
+    file_path = image_paths[page_index]
 
     # Load and preprocess the image
     img = Image.open(file_path)
@@ -197,9 +197,10 @@ def result(index):
         'predicted_class': predicted_class,
         'probabilities': {class_names[i]: prediction[i] for i in range(len(prediction))},
         'chart_html': chart_html,
-        'index': index
+        'index': page_index,
+        'batch_size': len(image_paths)
     }
-
+    print(f"#### INDEX: {index} | {result['index']}")
     new_db_entry = {
         'image_name' : os.path.basename(file_path),
         'image_path': file_path,
