@@ -1,3 +1,4 @@
+import re
 import shutil
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 import os
@@ -28,9 +29,12 @@ IMG_SIZE = 512
 BATCH_SIZE = 4  # Number of images per batch to load into memory, since we are testing only a couple of images, 1 is enough
 NUM_WORKERS = 1 # Number of CPU cores to load images
 
+WELLS_PER_ROW = 4
+
 app = Flask(__name__, static_url_path='/static')
 
 image_paths = []  # Global list to store the paths of uploaded images
+metadata_df = None
 
 class ImageDataset(Dataset):
     def __init__(self, image_paths):
@@ -69,16 +73,26 @@ def upload():
     if not images:
         return 'No images selected', 400
 
-    metadata_file = None
+    global metadata_df
+    metadata_df = None
+    
      # Check if the 'metadata' field is present in the request files
     if 'metadata' in request.files:
         metadata_file = request.files['metadata']
-        print(metadata_file)
+
         if metadata_file.filename.endswith('.csv'):
             # Process the metadata CSV file
             metadata_df = pd.read_csv(metadata_file)
-        # else:
-        #     return 'Metadata should be in CSV format', 400
+
+            # Clear all rows with all NaN values
+            metadata_df.dropna(how='all', inplace=True)
+
+            metadata_df['real_idx'] = metadata_df['real_idx'].astype('int')
+            metadata_df['well1'] = metadata_df['well1'].astype('int')
+            metadata_df['well2'] = metadata_df['well2'].astype('int')
+            metadata_df['well3'] = metadata_df['well3'].astype('int')
+            metadata_df['well4'] = metadata_df['well4'].astype('int')
+            metadata_df['real_idx'] = metadata_df['real_idx'].astype('str')
 
     for file in images:
         # Check if the file has a filename
@@ -162,8 +176,10 @@ def process_images():
     predicted_classes_list = []
     probabilities_list = []
 
+    batch_count = 0
      # Iterate over the batches in the dataloader
     for images, image_paths_batch in dataloader:
+        print(f"Processing batch {batch_count}/{len(dataloader)}")
         # Perform inference on the batch of images using your model
         with torch.no_grad():
             images = images.to(device)
@@ -181,27 +197,6 @@ def process_images():
         for i, image_path in enumerate(image_paths_batch):
             # Create a new document for the image result
             probs = probabilities_batch[i].tolist()
-
-            # MongoDB Document format:
-            # {
-            #   file_path : string;
-            #   image_name : string;
-            #   predicted_probabilities: [float,float,float]|null;
-            #   assigned_label: string;
-            #   label_approved: boolean;
-            #   linker: string|null;
-            #   startdate : {year:int,month:int,day:int}|null;
-            #   plate_index : int|null;
-            #   image_index : int|null;
-            #   magnification: int|null;
-            #   conditions: {
-            #       time: int|null;
-            #       temp: float|null;
-            #       ctot: float|null;
-            #       loglmratio: float|null;
-            #   }
-            # }
-
             image_name = os.path.basename(image_path)
 
             # Check if an entry with the same image_name already exists in the database
@@ -223,8 +218,47 @@ def process_images():
                     'image_name': image_name,
                     'assigned_label': class_names[predicted_classes_batch[i].item()],
                     'approved': False,
-                    'probabilities': {class_names[j]: float(probs[j]) for j in range(len(probs))}
+                    'probabilities': {class_names[j]: float(probs[j]) for j in range(len(probs))},
+                    'linker': None,
+                    'start_date_year': None,
+                    'start_date_month': None,
+                    'start_date_day': None,
+                    'plate_index': None,
+                    'image_index': None,
+                    'magnification': None,
+                    'reaction_time': None,
+                    'temperature': None,
+                    'ctot': None,
+                    'loglmratio': None
                 }
+
+                # Checks if metadata is available for the image
+                # If metadata is available, store the metadata in the database
+                # If metadata is not available, store null values in the database
+                if metadata_df is not None:
+                    if re.match(r'position\d{3}.jpg', image_name):
+                        image_index = int(image_name[8:11])
+                        row_index = int(np.ceil(image_index / WELLS_PER_ROW)) - 1
+                        # Select row from metadata_df pandas dataframe by row_index
+                        row = metadata_df.iloc[row_index]
+                        # row['real_idx] is in the format 2023042426, which is year, month, day, plate_index
+                        real_idx = row['real_idx']
+                        year = int(real_idx[:4])
+                        month = int(real_idx[4:6])
+                        day = int(real_idx[6:8])
+                        plate_index = int(real_idx[8:10])
+
+                        new_db_entry['start_date_year'] = year
+                        new_db_entry['start_date_month'] = month
+                        new_db_entry['start_date_day'] = day
+                        new_db_entry['plate_index'] = plate_index
+                        new_db_entry['image_index'] = image_index
+
+                        new_db_entry['linker'] = row['acronym']
+                        new_db_entry['reaction_time'] = row['time']
+                        new_db_entry['temperature'] = row['temp']
+                        new_db_entry['ctot'] = row['ctot']
+                        new_db_entry['loglmratio'] = row['loglmratio']
 
                 # Insert the result document into the database collection
                 collection.insert_one(new_db_entry)
