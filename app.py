@@ -3,7 +3,7 @@ import shutil
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 import os
 import pandas as pd
-from pathlib import Path
+from bson import ObjectId
 import torch
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
@@ -341,7 +341,7 @@ def update_approval(db_id):
 
         # Update the existing entry with the new result
         collection.update_one(
-            {'_id': db_id},
+            {'_id': ObjectId(db_id)},
             {'$set': {
                 'assigned_label': label,
                 'approved': approved}
