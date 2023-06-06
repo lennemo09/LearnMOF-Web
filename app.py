@@ -317,6 +317,7 @@ def result(index):
 
     result = {
         'image_path': file_path,
+        'image_name': os.path.basename(file_path),
         'db_id': str(result_document['_id']),
         'predicted_class': predicted_class,
         'probabilities': probabilities,
