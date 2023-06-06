@@ -2,11 +2,42 @@
 <html>
   <head>
     <title>Result</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+      // Function to handle the approval action
+      function updateApproval(approved) {
+        var dropdown = document.getElementById("approvalDropdown");
+        var selectedLabel = dropdown.value;
+
+        $.ajax({
+          url: "{{ url_for('update_approval', db_id=result.db_id) }}",
+          type: "POST",
+          data: { approve: approved, label: selectedLabel },
+          success: function() {
+            console.log("Approval updated successfully.");
+          },
+          error: function(xhr, status, error) {
+            console.error("Error updating approval:", error);
+          }
+        });
+      }
+    </script>
   </head>
   <body>
     <h1>Result</h1>
     <img src="{{ url_for('uploaded_image', filename=result.image_path) }}" alt="Uploaded Image" width="800">
     <p>Predicted class: {{ result.predicted_class }}</p>
+
+    <div>
+      <select id="approvalDropdown">
+        <option value="crystal" {% if result.predicted_class == 'crystal' %}selected{% endif %}>crystal</option>
+        <option value="challenging-crystal" {% if result.predicted_class == 'challenging-crystal' %}selected{% endif %}>challenging-crystal</option>
+        <option value="non-crystal" {% if result.predicted_class == 'non-crystal' %}selected{% endif %}>non-crystal</option>
+      </select>
+      <button onclick="updateApproval(true)">Approve</button>
+      <button onclick="updateApproval(false)">Tentative</button>
+    </div>
+
     <h3>Probabilities:</h3>
     <ul>
       {% for label, prob in result.probabilities.items() %}

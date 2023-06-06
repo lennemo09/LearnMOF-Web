@@ -317,6 +317,7 @@ def result(index):
 
     result = {
         'image_path': file_path,
+        'db_id': str(result_document['_id']),
         'predicted_class': predicted_class,
         'probabilities': probabilities,
         'chart_html': chart_html,
@@ -329,6 +330,25 @@ def result(index):
 @app.route('/<path:filename>')
 def uploaded_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/update_approval/<string:db_id>', methods=['POST'])
+def update_approval(db_id):
+    if request.method == 'POST':
+        approved = request.form.get('approve', False)
+        label = request.form.get('label', None)
+
+        print('Approved:', approved, 'Label:', label)
+
+        # Update the existing entry with the new result
+        collection.update_one(
+            {'_id': db_id},
+            {'$set': {
+                'assigned_label': label,
+                'approved': approved}
+            }
+        )
+
+    return '', 204  # Return an empty response with a 204 status code
 
 def is_same_image(image_path1, image_path2):
     image1 = Image.open(image_path1)
