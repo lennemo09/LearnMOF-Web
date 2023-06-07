@@ -20,6 +20,8 @@
             console.error("Error updating approval:", error);
           }
         });
+        // Reload the page
+        location.reload();
       }
     </script>
   </head>
@@ -57,18 +59,6 @@
     <p>Reaction time: {{result.reaction_time}}</p>
     <p>ctot: {{result.ctot}}</p>
     <p>loglmratio: {{result.loglmratio}}</p>
-<!-- 
-    <br>
-    {% if result.uploaded_batch_index == 0 %}
-    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_size - 1) }}">Previous</a>
-    {% else %}
-    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_index - 1) }}">Previous</a>
-    {% endif %}
-    
-    {% if result.uploaded_batch_index == result.uploaded_batch_size - 1 %}
-    <a href="{{ url_for('result_by_index', index=0) }}">Next</a>
-    {% else %}
-    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_index + 1) }}">Next</a>
-    {% endif %} -->
+
   </body>
 </html>
