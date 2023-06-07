@@ -49,24 +49,26 @@
         {{ result['chart_html']|safe }}  <!-- Insert the chart HTML -->
     </div>
 
-    <p>Experiment date: Day: {{result.start_day}}. Month: {{result.start_month}}. Year: {{result.start_year}}</p>
-    <p>Plate: {{result.plate_index}}. Position: {{result.image_index}}</p>
+    <p>Experiment date: Day: {{result.start_day}} - Month: {{result.start_month}} - Year: {{result.start_year}}</p>
+    <p>Plate: {{result.plate_index}}</p>
+    <p>Well index:</p> 
+    <p>Magnification: {{result.magnification}} - Position: {{result.image_index}}</p>
     <p>Linker: {{result.linker}}</p>
     <p>Reaction time: {{result.reaction_time}}</p>
     <p>ctot: {{result.ctot}}</p>
     <p>loglmratio: {{result.loglmratio}}</p>
 
     <br>
-    {% if result.index == 0 %}
-    <a href="{{ url_for('result_by_index', index=result.batch_size - 1) }}">Previous</a>
+    {% if result.uploaded_batch_index == 0 %}
+    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_size - 1) }}">Previous</a>
     {% else %}
-    <a href="{{ url_for('result_by_index', index=result.index - 1) }}">Previous</a>
+    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_index - 1) }}">Previous</a>
     {% endif %}
     
-    {% if result.index == result.batch_size - 1 %}
+    {% if result.uploaded_batch_index == result.uploaded_batch_size - 1 %}
     <a href="{{ url_for('result_by_index', index=0) }}">Next</a>
     {% else %}
-    <a href="{{ url_for('result_by_index', index=result.index + 1) }}">Next</a>
+    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_index + 1) }}">Next</a>
     {% endif %}
   </body>
 </html>
