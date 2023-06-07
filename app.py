@@ -180,6 +180,7 @@ def process_images():
      # Iterate over the batches in the dataloader
     for images, image_paths_batch in dataloader:
         print(f"Processing batch {batch_count}/{len(dataloader)}")
+        batch_count += 1
         # Perform inference on the batch of images using your model
         with torch.no_grad():
             images = images.to(device)
@@ -240,6 +241,7 @@ def process_images():
                         image_index = int(image_name[8:11])
                         row_index = int(np.ceil(image_index / WELLS_PER_ROW)) - 1
                         # Select row from metadata_df pandas dataframe by row_index
+                        # TODO: Handle when image index not in metadata file
                         row = metadata_df.iloc[row_index]
                         # row['real_idx] is in the format 2023042426, which is year, month, day, plate_index
                         real_idx = row['real_idx']
@@ -261,7 +263,8 @@ def process_images():
                         new_db_entry['loglmratio'] = row['loglmratio']
 
                 # Insert the result document into the database collection
-                entry_id = collection.insert_one(new_db_entry)
+                entry = collection.insert_one(new_db_entry)
+                entry_id = entry.inserted_id
     
     # Redirect to the 'result' page
     return redirect(url_for('result_by_index', index=0))
@@ -324,7 +327,18 @@ def result_by_index(index):
         'probabilities': probabilities,
         'chart_html': chart_html,
         'index': page_index,
-        'batch_size': len(image_paths)
+        'batch_size': len(image_paths),
+        'magnification': result_document['magnification'] if result_document['magnification'] is not None else 'n/a',
+        'start_day': result_document['start_date_day'] if result_document['start_date_day'] is not None else '?',
+        'start_month': result_document['start_date_month'] if result_document['start_date_month'] is not None else '?',
+        'start_year': result_document['start_date_year'] if result_document['start_date_year'] is not None else '?',
+        'plate_index': result_document['plate_index'] if result_document['plate_index'] is not None else 'n/a',
+        'image_index': result_document['image_index'] if result_document['image_index'] is not None else 'n/a',
+        'linker': result_document['linker'] if result_document['linker'] is not None else 'n/a',
+        'reaction_time': result_document['reaction_time'] if result_document['reaction_time'] is not None else 'n/a',
+        'temperature': result_document['temperature'] if result_document['temperature'] is not None else 'n/a',
+        'ctot': result_document['ctot'] if result_document['ctot'] is not None else 'n/a',
+        'loglmratio': result_document['loglmratio'] if result_document['loglmratio'] is not None else 'n/a'
     }
 
     return render_template('result.html', result=result)
