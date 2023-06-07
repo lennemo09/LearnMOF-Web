@@ -7,10 +7,11 @@
       .image-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        gap: 10px; /* Reduce the gap between grid items */
       }
       .image-card {
         text-align: center;
+        cursor: pointer; /* Add cursor pointer for clickable effect */
       }
       .image-subtitle {
         color: red; /* Customize the style for the subtitle of unapproved images */
@@ -21,13 +22,11 @@
     <h1>Image Database</h1>
     <div class="image-grid">
       {% for image in images %}
-        <div class="image-card">
-          <img src="{{ url_for('uploaded_image', filename=image.image_path) }}" alt="{{ image.image_name }}">
+        <div class="image-card" onclick="location.href='{{  url_for('result_from_db', db_id=image.db_id) }}'">
+          <img src="{{ url_for('uploaded_image', filename=image.image_path) }}" alt="{{ image.image_name }}" width="200">
           <h3>{{ image.image_name }}</h3>
           {% if not image.approved %}
-            <h4 class="image-subtitle">{{ image.assigned_label }} (?)</h4>
-            {% else %}
-            <h4 class="image-subtitle">{{ image.assigned_label }}</h4>          
+            <h4 class="image-subtitle">{{ image.assigned_label }}</h4>
           {% endif %}
         </div>
       {% endfor %}
