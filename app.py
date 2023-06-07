@@ -217,6 +217,7 @@ def process_images():
                 # Create a new document for the image result
                 new_db_entry = {
                     'image_name': image_name,
+                    'image_path': image_path,
                     'assigned_label': class_names[predicted_classes_batch[i].item()],
                     'approved': False,
                     'probabilities': {class_names[j]: float(probs[j]) for j in range(len(probs))},
@@ -269,7 +270,71 @@ def process_images():
     # Redirect to the 'result' page
     return redirect(url_for('result_by_index', index=0))
 
-@app.route('/batchresult/<int:index>')
+@app.route('/browse/database/<string:db_id>')
+def result_from_db(db_id):
+    result_document = collection.find_one({'_id': ObjectId(db_id)})
+
+    # Check if the result document exists
+    if result_document is None:
+        return f'Result not found for db_id: {db_id}', 404
+    
+    file_path = result_document['image_path']
+    # Extract the result information from the document
+    predicted_class = result_document['assigned_label']
+    probabilities = result_document['probabilities']
+    probabilities_list = list(probabilities.values())
+
+    print(predicted_class)
+
+    print(f"Image {file_path}: Predicted class: {predicted_class} with probabilities: {probabilities}.")
+    
+    # Create the bar chart data
+    labels = list(class_names.values())
+    labels[0], labels[1] = labels[1], labels[0]
+    probabilities_list[0], probabilities_list[1] = probabilities_list[1], probabilities_list[0]
+    colors = ['rgb(52, 129, 237)', 'rgb(130, 232, 133)', 'rgb(224, 93, 70)']  # Customize the colors if needed
+
+    # Drawing the stacked bar chart horizontally
+    names_col = ['Class', '#','Probability']
+    plotting_data = [[labels[i], 0, probabilities_list[i]] for i in range(len(labels))]
+    plot_df = pd.DataFrame(data=plotting_data, columns=names_col)
+
+    fig = px.bar(plot_df, x='Probability', y='#', color='Class' ,title='Classification probabilities', orientation='h',
+                 height=100, hover_data={"Class":True,"Probability":True,"#":False},
+                 color_discrete_sequence=colors)
+    
+    fig.update_layout(template='simple_white',margin=dict(l=0,r=0,b=0,t=0),
+                     xaxis_range=[0,1], showlegend=False)
+    
+    # Set the y axis visibility OFF
+    fig.update_yaxes(title='y', visible=False, showticklabels=False)
+
+    # Convert the Figure object to an HTML string
+    chart_html = fig.to_html(full_html=False)
+
+    result = {
+        'image_path': file_path,
+        'image_name': os.path.basename(file_path),
+        'db_id': str(result_document['_id']),
+        'predicted_class': predicted_class,
+        'probabilities': probabilities,
+        'chart_html': chart_html,
+        'magnification': result_document['magnification'] if result_document['magnification'] is not None else 'n/a',
+        'start_day': result_document['start_date_day'] if result_document['start_date_day'] is not None else '?',
+        'start_month': result_document['start_date_month'] if result_document['start_date_month'] is not None else '?',
+        'start_year': result_document['start_date_year'] if result_document['start_date_year'] is not None else '?',
+        'plate_index': result_document['plate_index'] if result_document['plate_index'] is not None else 'n/a',
+        'image_index': result_document['image_index'] if result_document['image_index'] is not None else 'n/a',
+        'linker': result_document['linker'] if result_document['linker'] is not None else 'n/a',
+        'reaction_time': result_document['reaction_time'] if result_document['reaction_time'] is not None else 'n/a',
+        'temperature': result_document['temperature'] if result_document['temperature'] is not None else 'n/a',
+        'ctot': result_document['ctot'] if result_document['ctot'] is not None else 'n/a',
+        'loglmratio': result_document['loglmratio'] if result_document['loglmratio'] is not None else 'n/a'
+    }
+
+    return render_template('result_db.html', result=result)
+
+@app.route('/uploadresult/<int:index>')
 def result_by_index(index):
     # TODO: Change result page from using image_paths to using database ID's.
     page_index = index % len(image_paths)
@@ -304,7 +369,7 @@ def result_by_index(index):
     # Drawing the stacked bar chart horizontally
     names_col = ['Class', '#','Probability']
     plotting_data = [[labels[i], 0, probabilities_list[i]] for i in range(len(labels))]
-    plot_df = pd.DataFrame(data=plotting_data,columns=names_col)
+    plot_df = pd.DataFrame(data=plotting_data, columns=names_col)
 
     fig = px.bar(plot_df, x='Probability', y='#', color='Class' ,title='Classification probabilities', orientation='h',
                  height=100, hover_data={"Class":True,"Probability":True,"#":False},

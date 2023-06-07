@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Result</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+      // Function to handle the approval action
+      function updateApproval(approved) {
+        var dropdown = document.getElementById("approvalDropdown");
+        var selectedLabel = dropdown.value;
+
+        $.ajax({
+          url: "{{ url_for('update_approval', db_id=result.db_id) }}",
+          type: "POST",
+          data: { approve: approved, label: selectedLabel },
+          success: function() {
+            console.log("Approval updated successfully.");
+          },
+          error: function(xhr, status, error) {
+            console.error("Error updating approval:", error);
+          }
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Result</h1>
+    <p>Image name: {{ result.image_name }}</p>
+    <img src="{{ url_for('uploaded_image', filename=result.image_path) }}" alt="Uploaded Image" width="800">
+    <p>Predicted class: {{ result.predicted_class }}</p>
+    <!-- TODO: Add flag to show whether the predicted class is approved -->
+    <div>
+      <select id="approvalDropdown">
+        <option value="crystal" {% if result.predicted_class == 'crystal' %}selected{% endif %}>crystal</option>
+        <option value="challenging-crystal" {% if result.predicted_class == 'challenging-crystal' %}selected{% endif %}>challenging-crystal</option>
+        <option value="non-crystal" {% if result.predicted_class == 'non-crystal' %}selected{% endif %}>non-crystal</option>
+      </select>
+      <button onclick="updateApproval(true)">Approve</button>
+      <button onclick="updateApproval(false)">Tentative</button>
+    </div>
+
+    <h3>Probabilities:</h3>
+    <ul>
+      {% for label, prob in result.probabilities.items() %}
+      <li>{{ label }}: {{ "%.3f"|format(prob) }}</li>
+      {% endfor %}
+    </ul>
+    <div>
+        {{ result['chart_html']|safe }}  <!-- Insert the chart HTML -->
+    </div>
+
+    <p>Experiment date: Day: {{result.start_day}} - Month: {{result.start_month}} - Year: {{result.start_year}}</p>
+    <p>Plate: {{result.plate_index}}</p>
+    <p>Well index:</p> 
+    <p>Magnification: {{result.magnification}} - Position: {{result.image_index}}</p>
+    <p>Linker: {{result.linker}}</p>
+    <p>Reaction time: {{result.reaction_time}}</p>
+    <p>ctot: {{result.ctot}}</p>
+    <p>loglmratio: {{result.loglmratio}}</p>
+<!-- 
+    <br>
+    {% if result.uploaded_batch_index == 0 %}
+    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_size - 1) }}">Previous</a>
+    {% else %}
+    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_index - 1) }}">Previous</a>
+    {% endif %}
+    
+    {% if result.uploaded_batch_index == result.uploaded_batch_size - 1 %}
+    <a href="{{ url_for('result_by_index', index=0) }}">Next</a>
+    {% else %}
+    <a href="{{ url_for('result_by_index', index=result.uploaded_batch_index + 1) }}">Next</a>
+    {% endif %} -->
+  </body>
+</html>
