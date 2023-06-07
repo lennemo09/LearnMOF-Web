@@ -261,13 +261,14 @@ def process_images():
                         new_db_entry['loglmratio'] = row['loglmratio']
 
                 # Insert the result document into the database collection
-                collection.insert_one(new_db_entry)
+                entry_id = collection.insert_one(new_db_entry)
     
     # Redirect to the 'result' page
-    return redirect(url_for('result', index=0))
+    return redirect(url_for('result_by_index', index=0))
 
-@app.route('/result/<int:index>')
-def result(index):
+@app.route('/batchresult/<int:index>')
+def result_by_index(index):
+    # TODO: Change result page from using image_paths to using database ID's.
     page_index = index % len(image_paths)
 
     if page_index < 0 or page_index >= len(image_paths):

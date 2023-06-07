@@ -28,7 +28,7 @@
     <p>Image name: {{ result.image_name }}</p>
     <img src="{{ url_for('uploaded_image', filename=result.image_path) }}" alt="Uploaded Image" width="800">
     <p>Predicted class: {{ result.predicted_class }}</p>
-
+    <!-- TODO: Add flag to show whether the predicted class is approved -->
     <div>
       <select id="approvalDropdown">
         <option value="crystal" {% if result.predicted_class == 'crystal' %}selected{% endif %}>crystal</option>
@@ -50,15 +50,15 @@
     </div>
     <br>
     {% if result.index == 0 %}
-    <a href="{{ url_for('result', index=result.batch_size - 1) }}">Previous</a>
+    <a href="{{ url_for('result_by_index', index=result.batch_size - 1) }}">Previous</a>
     {% else %}
-    <a href="{{ url_for('result', index=result.index - 1) }}">Previous</a>
+    <a href="{{ url_for('result_by_index', index=result.index - 1) }}">Previous</a>
     {% endif %}
     
     {% if result.index == result.batch_size - 1 %}
-    <a href="{{ url_for('result', index=0) }}">Next</a>
+    <a href="{{ url_for('result_by_index', index=0) }}">Next</a>
     {% else %}
-    <a href="{{ url_for('result', index=result.index + 1) }}">Next</a>
+    <a href="{{ url_for('result_by_index', index=result.index + 1) }}">Next</a>
     {% endif %}
   </body>
 </html>
