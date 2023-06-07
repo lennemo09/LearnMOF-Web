@@ -419,6 +419,7 @@ def browse():
     # Iterate over the entries and extract the image data
     for entry in entries:
         image_data = {
+            'db_id': str(entry['_id']),
             'image_path': entry.get('image_path', ''),
             'image_name': entry.get('image_name', ''),
             'assigned_label': entry.get('assigned_label', '')
