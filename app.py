@@ -406,7 +406,27 @@ def result_by_index(index):
         'loglmratio': result_document['loglmratio'] if result_document['loglmratio'] is not None else 'n/a'
     }
 
-    return render_template('result.html', result=result)
+    return render_template('result_upload.html', result=result)
+    
+@app.route('/browse')
+def browse():
+    # Query the MongoDB database to retrieve all entries
+    entries = collection.find()
+
+    # Create a list to store the image data
+    images = []
+
+    # Iterate over the entries and extract the image data
+    for entry in entries:
+        image_data = {
+            'image_path': entry.get('image_path', ''),
+            'image_name': entry.get('image_name', ''),
+            'assigned_label': entry.get('assigned_label', '')
+        }
+        images.append(image_data)
+
+    # Render the 'database.html' template with the image data
+    return render_template('database.html', images=images)
 
 @app.route('/<path:filename>')
 def uploaded_image(filename):
