@@ -10,3 +10,12 @@ Pandas
 Pymongo
 Flask
 ```
+
+# Dependencies
+MongoDB installed and running on your system.
+
+# How to run
+To run the demo on your local machine, install the dependencies and required packages, and run the `app.py` script.
+```
+python3 app.py
+```
