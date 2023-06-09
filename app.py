@@ -240,7 +240,12 @@ def process_images():
                 if metadata_df is not None:
                     if re.match(r'position\d{3}.jpg', image_name):
                         image_index = int(image_name[8:11])
-                        row_index = int(np.ceil(image_index / WELLS_PER_ROW)) - 1
+
+                        # TODO: Handle when image magninifcation is not x400
+                        well_index = int((image_index - 1) // WELLS_PER_ROW) + 1
+                        row_index = int(np.ceil(well_index / WELLS_PER_ROW)) - 1
+                        print(f"Image index: {image_index}, well index: {well_index}, row index: {row_index}")
+
                         # Select row from metadata_df pandas dataframe by row_index
                         # TODO: Handle when image index not in metadata file
                         row = metadata_df.iloc[row_index]
@@ -317,6 +322,7 @@ def result_from_db(db_id):
         'image_name': os.path.basename(file_path),
         'db_id': str(result_document['_id']),
         'predicted_class': predicted_class,
+        'approved': result_document['approved'],
         'probabilities': probabilities,
         'chart_html': chart_html,
         'magnification': result_document['magnification'] if result_document['magnification'] is not None else 'n/a',
@@ -389,6 +395,7 @@ def result_by_index(index):
         'image_name': os.path.basename(file_path),
         'db_id': str(result_document['_id']),
         'predicted_class': predicted_class,
+        'approved': result_document['approved'],
         'probabilities': probabilities,
         'chart_html': chart_html,
         'uploaded_batch_index': page_index,
@@ -422,6 +429,7 @@ def browse():
             'db_id': str(entry['_id']),
             'image_path': entry.get('image_path', ''),
             'image_name': entry.get('image_name', ''),
+            'approved': entry.get('approved', ''),
             'assigned_label': entry.get('assigned_label', '')
         }
         images.append(image_data)

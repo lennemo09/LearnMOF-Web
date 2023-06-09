@@ -29,7 +29,12 @@
     <h1>Result</h1>
     <p>Image name: {{ result.image_name }}</p>
     <img src="{{ url_for('uploaded_image', filename=result.image_path) }}" alt="Uploaded Image" width="800">
-    <p>Predicted class: {{ result.predicted_class }}</p>
+    {% if not result.approved %}
+      <p>Predicted class: {{ result.predicted_class }} (?)</p>
+    {% else %}
+      <p>Predicted class: {{ result.predicted_class }}</p>
+    {% endif %}
+
     <!-- TODO: Add flag to show whether the predicted class is approved -->
     <div>
       <select id="approvalDropdown">

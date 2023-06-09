@@ -26,6 +26,8 @@
           <img src="{{ url_for('uploaded_image', filename=image.image_path) }}" alt="{{ image.image_name }}" width="200">
           <h3>{{ image.image_name }}</h3>
           {% if not image.approved %}
+            <h4 class="image-subtitle">{{ image.assigned_label }}(?)</h4>
+          {% else %}
             <h4 class="image-subtitle">{{ image.assigned_label }}</h4>
           {% endif %}
         </div>
