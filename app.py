@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
+import torchvision
 import plotly.express as px
 import zipfile
 import pandas as pd
@@ -20,8 +21,6 @@ ALLOWED_EXTENSIONS = ('jpg', 'jpeg', 'png', 'gif')
 MODEL_DIR = "."
 RESULTS_DIR = "results"
 MODEL_PATH = MODEL_DIR + "/" + MODEL_NAME
-
-# IMAGES_DIR = Path("images")
 
 SEED = 1337
 IMG_SIZE = 512
@@ -505,9 +504,15 @@ if __name__ == '__main__':
     client = pymongo.MongoClient('mongodb://localhost:27017/')
     db = client['learnmof']
     collection = db['data']
-    # collection.drop()
+    
+    try:
+        collection.find()
+    except:
+        print('MongoDB not running, exiting...')
+    
 
-    print(db)
+    print(f"Using torchvision version {torchvision.__version__}.")
+    print(f"Using torch version {torch.__version__}.")
 
     # Setup device-agnostic code
     if torch.cuda.is_available():
