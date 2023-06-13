@@ -446,6 +446,10 @@ def uploaded_image(filename):
 def update_approval(db_id):
     if request.method == 'POST':
         approved = request.form.get('approve', False)
+
+        if type(approved) == str:
+            approved = True if approved.lower() == 'true' else False
+
         label = request.form.get('label', None)
 
         print('Approved:', approved, 'Label:', label)
