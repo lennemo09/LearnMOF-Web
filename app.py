@@ -337,6 +337,8 @@ def result_from_db(db_id):
         'loglmratio': result_document['loglmratio'] if result_document['loglmratio'] is not None else 'n/a'
     }
 
+    print(result['approved'])
+
     return render_template('result_db.html', result=result)
 
 @app.route('/uploadresult/<int:index>')
@@ -504,7 +506,7 @@ if __name__ == '__main__':
     client = pymongo.MongoClient('mongodb://localhost:27017/')
     db = client['learnmof']
     collection = db['data']
-    
+
     try:
         collection.find()
     except:

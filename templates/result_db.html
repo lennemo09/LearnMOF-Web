@@ -14,7 +14,7 @@
           type: "POST",
           data: { approve: approved, label: selectedLabel },
           success: function() {
-            console.log("Approval updated successfully.");
+            console.log(`Approval updated successfully: {selectedLabel} {approved}`);
           },
           error: function(xhr, status, error) {
             console.error("Error updating approval:", error);
@@ -26,6 +26,12 @@
     </script>
   </head>
   <body>
+    {% extends 'base.html' %}
+
+    {% block title %}Result{% endblock %}
+
+    {% block content %}
+
     <h1>Result</h1>
     <p>Image name: {{ result.image_name }}</p>
     <img src="{{ url_for('uploaded_image', filename=result.image_path) }}" alt="Uploaded Image" width="800">
@@ -64,6 +70,8 @@
     <p>Reaction time: {{result.reaction_time}}</p>
     <p>ctot: {{result.ctot}}</p>
     <p>loglmratio: {{result.loglmratio}}</p>
+
+    {% endblock %}
 
   </body>
 </html>

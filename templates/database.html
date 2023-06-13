@@ -7,7 +7,7 @@
       .image-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px; /* Reduce the gap between grid items */
+        gap: 7px; /* Reduce the gap between grid items */
       }
       .image-card {
         text-align: center;
@@ -19,6 +19,11 @@
     </style>
   </head>
   <body>
+    {% extends 'base.html' %}
+
+    {% block title %}Database{% endblock %}
+
+    {% block content %}
     <h1>Image Database</h1>
     <div class="image-grid">
       {% for image in images %}
@@ -33,5 +38,6 @@
         </div>
       {% endfor %}
     </div>
+    {% endblock %}
   </body>
 </html>

@@ -15,6 +15,12 @@
     </script>
   </head>
   <body>
+    {% extends 'base.html' %}
+
+    {% block title %}Home{% endblock %}
+
+    {% block content %}
+    
     <h1>Image Upload</h1>
     <div id="processing-message" style="display: none;">
       <h2>Processing your data, please wait...</h2>
@@ -27,5 +33,7 @@
       
       <input type="submit" value="Upload">
     </form>
+    
+    {% endblock %}
   </body>
 </html>
