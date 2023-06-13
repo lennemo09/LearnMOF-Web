@@ -538,4 +538,4 @@ if __name__ == '__main__':
     # Set the upload folder
     UPLOAD_FOLDER = 'static/images'
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0",port=5000)
