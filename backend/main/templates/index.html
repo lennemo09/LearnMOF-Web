@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image Upload</title>
+    <script>
+      function showProcessingMessage() {
+        // Hide the form
+        var form = document.getElementById("upload-form");
+        form.style.display = "none";
+        
+        // Show the processing message
+        var processingMessage = document.getElementById("processing-message");
+        processingMessage.style.display = "block";
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Image Upload</h1>
+    <div id="processing-message" style="display: none;">
+      <h2>Processing your data, please wait...</h2>
+    </div>
+    <form id="upload-form" method="POST" enctype="multipart/form-data" action="/upload" onsubmit="showProcessingMessage()">
+      <h2>Upload images</h2>
+      <input type="file" name="images" accept=".zip, image/*" multiple>
+      <h2>Upload metadata</h2>
+      <input type="file" name="metadata" accept=".csv">
+      
+      <input type="submit" value="Upload">
+    </form>
+  </body>
+</html>
