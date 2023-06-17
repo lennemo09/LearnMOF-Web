@@ -6,10 +6,12 @@ from bson import ObjectId
 from flask import redirect, render_template, request, send_from_directory, url_for
 
 from main import app, collection
+from main.commons.decorators import parse_args_with
 from main.engines.inference import perform_reference, update_inference_to_db
 from main.engines.upload import get_metadata_from_csv, handle_jpg_files, handle_zip_file
 from main.enums import UPLOAD_FOLDER, Label
 from main.libs.utils import get_image_paths
+from main.schemas.browse import GetFilteredImagesSchema, UpdateApproval
 
 metadata_df = None
 class_names = {0: "challenging-crystal", 1: "crystal", 2: "non-crystal"}
@@ -198,12 +200,19 @@ def update_approval(db_id):
         approved = request.form.get("approve", False)
         label = request.form.get("label", None)
 
-        print("Approved:", approved, "Label:", label)
+        update_approval = UpdateApproval(approved=approved, label=label)
+
+        print("Approved:", update_approval.approved, "Label:", update_approval.label)
 
         # Update the existing entry with the new result
         collection.update_one(
             {"_id": ObjectId(db_id)},
-            {"$set": {"assigned_label": label, "approved": approved}},
+            {
+                "$set": {
+                    "assigned_label": update_approval.label,
+                    "approved": update_approval.approved,
+                }
+            },
         )
 
     return "", 204  # Return an empty response with a 204 status code
@@ -216,10 +225,11 @@ def uploaded_image(filename):
     return send_from_directory(directory, filename)
 
 
-@app.route("/browse")
-def browse():
+@app.get("/browse")
+@parse_args_with(GetFilteredImagesSchema)
+def browse(args: GetFilteredImagesSchema):
     # Query the MongoDB database to retrieve all entries
-    entries = collection.find()
+    entries = collection.find(args.dict(exclude_none=True))
 
     # Create a list to store the image data
     images = []
