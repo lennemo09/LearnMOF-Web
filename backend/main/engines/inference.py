@@ -1,14 +1,13 @@
 import os
-import re
-from math import ceil
 
+import pandas as pd
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 from main import collection, device, model
-from main.enums import BATCH_SIZE, IMG_SIZE, NUM_WORKERS, WELLS_PER_ROW, Label
+from main.enums import BATCH_SIZE, IMG_SIZE, NUM_WORKERS, Label
 
 
 class ImageDataset(Dataset):
@@ -71,6 +70,7 @@ def perform_reference(image_paths):
 def update_inference_to_db(
     image_paths, predicted_classes_list: list, probabilities_list: list, metadata_df
 ):
+    images_db_id = []
     for i, image_path in enumerate(image_paths):
         probs = probabilities_list[i]
         image_name = os.path.basename(image_path)
@@ -90,6 +90,7 @@ def update_inference_to_db(
                     }
                 },
             )
+            images_db_id.append(str(existing_entry["_id"]))
 
         else:
             new_db_entry = {
@@ -113,42 +114,56 @@ def update_inference_to_db(
                 "loglmratio": None,
             }
 
-            if metadata_df is not None:
-                print("check 1")
-                if re.match(r"position\d{3}.jpg", image_name):
-                    print("check 2")
-                    image_index = int(image_name[8:11])
+            added_entry = collection.insert_one(new_db_entry)
+            images_db_id.append(str(added_entry.inserted_id))
 
-                    # TODO: Handle when image magninifcation is not x400
-                    well_index = int((image_index - 1) // WELLS_PER_ROW) + 1
-                    row_index = int(ceil(well_index / WELLS_PER_ROW)) - 1
-                    print(
-                        f"Image index: {image_index}, well index: {well_index}, row index: {row_index}"
-                    )
+    if metadata_df is not None:
+        update_metadata(metadata_df)
 
-                    # Select row from metadata_df pandas dataframe by row_index
-                    # TODO: Handle when image index not in metadata file
-                    row = metadata_df.iloc[row_index]
-                    # row['real_idx] is in the format 2023042426, which is year, month, day, plate_index
-                    real_idx = row["real_idx"]
-                    year = int(real_idx[:4])
-                    month = int(real_idx[4:6])
-                    day = int(real_idx[6:8])
-                    plate_index = int(real_idx[8:10])
+    return images_db_id
 
-                    new_db_entry["start_date_year"] = year
-                    new_db_entry["start_date_month"] = month
-                    new_db_entry["start_date_day"] = day
-                    new_db_entry["plate_index"] = plate_index
-                    new_db_entry["image_index"] = image_index
 
-                    new_db_entry["linker"] = row["acronym"]
-                    new_db_entry["reaction_time"] = row["time"]
-                    new_db_entry["temperature"] = row["temp"]
-                    new_db_entry["ctot"] = row["ctot"]
-                    new_db_entry["loglmratio"] = row["loglmratio"]
+def update_metadata(metadata_df):
+    df_long = pd.melt(
+        metadata_df,
+        id_vars=ID_VARS,
+        value_vars=VALUE_VARS,
+        var_name="well",
+        value_name="value",
+    )
+    df = df_long.drop(columns="well").rename(columns={"value": "well"})
 
-            collection.insert_one(new_db_entry)
+    for index, row in df.iterrows():
+        position = str(row["well"]).zfill(3)
+        image_name = f"position{position}.jpg"
+
+        myquery = {"image_name": image_name}
+        image_index = int(image_name[8:11])
+
+        real_idx = row["real_idx"]
+        year = int(real_idx[:4])
+        month = int(real_idx[4:6])
+        day = int(real_idx[6:8])
+        plate_index = int(real_idx[8:10])
+
+        newvalues = {
+            "$set": {
+                "linker": row["acronym"],
+                "reaction_time": row["time"],
+                "temperature": row["temp"],
+                "ctot": row["ctot"],
+                "loglmratio": row["loglmratio"],
+                "start_date_year": year,
+                "start_date_month": month,
+                "start_date_day": day,
+                "plate_index": plate_index,
+                "image_index": image_index,
+            }
+        }
+
+        collection.update_one(myquery, newvalues)
 
 
 LABEL_MAPPING = {0: Label.CHALLENGING_CRYSTAL, 1: Label.CRYSTAL, 2: Label.NON_CRYSTAL}
+ID_VARS = ["temp", "time", "linker_idx", "acronym", "ctot", "loglmratio", "real_idx"]
+VALUE_VARS = ["well1", "well2", "well3", "well4"]

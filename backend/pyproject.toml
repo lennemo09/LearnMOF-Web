@@ -15,6 +15,7 @@ torchvision = "^0.15.2"
 pymongo = "^4.3.3"
 plotly = "^5.15.0"
 pydantic = "^1.10.9"
+flask-cors = "^3.0.10"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.2"

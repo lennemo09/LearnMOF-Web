@@ -3,6 +3,7 @@ import os
 import pymongo
 import torch
 from flask import Flask
+from flask_cors import CORS
 
 from main.enums import MODEL_NAME
 
@@ -11,6 +12,8 @@ static_url_path = os.path.abspath(
 )
 app = Flask(__name__, static_url_path=static_url_path)
 app.config["UPLOAD_FOLDER"] = "images"
+
+CORS(app)
 
 client = pymongo.MongoClient("mongodb://localhost:27017/")
 db = client["learnmof"]

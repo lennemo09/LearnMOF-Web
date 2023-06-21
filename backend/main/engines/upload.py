@@ -25,10 +25,10 @@ def get_metadata_from_csv(metadata_file):
     return metadata_df
 
 
-def handle_jpg_files(file, file_path):
+def handle_jpg_file(file, file_path):
     if not os.path.exists(file_path):
         file.save(file_path)
-        # image_paths.append(file_path)
+        return file_path
     else:
         temp_dir = "temp"
         os.makedirs(temp_dir, exist_ok=True)
@@ -36,7 +36,7 @@ def handle_jpg_files(file, file_path):
         file.save(file_path)
         new_path = rename_image_with_suffix(file_path, UPLOAD_FOLDER)
         shutil.move(file_path, new_path)
-        # image_paths.append(new_path)
+        return new_path
 
 
 def handle_zip_file(file, file_path):
@@ -87,7 +87,6 @@ def handle_zip_file(file, file_path):
             )
 
         shutil.move(image_file, destination_path)
-        # image_paths.append(destination_path)
 
 
 def rename_image_with_suffix(image_file, destination_dir):
@@ -111,9 +110,7 @@ def rename_image_with_suffix(image_file, destination_dir):
 
             destination_path = new_destination_path
 
-    # Move the image to the destination directory
     return destination_path
-    # shutil.move(image_file, destination_path)
 
 
 def is_same_image(image_path_1, image_path_2):

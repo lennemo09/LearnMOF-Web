@@ -1,0 +1,19 @@
+.nav {
+  background: #f0f0f0;
+  padding: 10px;
+}
+
+.ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+}
+
+.li {
+  margin: 0 10px;
+}
+
+.link {
+  text-decoration: none;
+  color: #333;
+}

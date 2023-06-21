@@ -11,7 +11,12 @@ from main.commons import exceptions
 
 def get_request_args():
     if request.method == "GET":
-        return request.args.to_dict()
+        image_ids = request.args.getlist("image_ids")
+        args = request.args.to_dict()
+        if image_ids:
+            args["image_ids"] = image_ids
+
+        return args
 
     return request.get_json() or {}
 
