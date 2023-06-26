@@ -32,13 +32,13 @@ function FileUpload() {
             }
 
             try {
-                const uploadResponse = await axios.post('/upload', formData);
+                const uploadResponse = await axios.post('/api/upload', formData);
                 console.log(uploadResponse.data); // Handle the response from the backend
                 setUploadSuccess(true);
 
                 const image_paths = uploadResponse.data.image_paths;
 
-                const processResponse = await axios.post('/process_images', {
+                const processResponse = await axios.post('/api/process_images', {
                     image_paths,
                 });
                 console.log(processResponse)

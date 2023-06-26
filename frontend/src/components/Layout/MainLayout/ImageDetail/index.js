@@ -13,7 +13,7 @@ function ImageDetails({match}) {
     useEffect(() => {
         // Fetch image details from the backend based on the image name
         const fetchImageDetails = () => {
-            axios.get(`/browse/${image_url}`)
+            axios.get(`/api/browse/${image_url}`)
                 .then(response => {
                     const {data} = response;
                     setImageDetails(data);
@@ -39,7 +39,7 @@ function ImageDetails({match}) {
             };
 
             axios
-                .post(`/update_approval/${dbId}`, requestData)
+                .post(`/api/update_approval/${dbId}`, requestData)
                 .then((response) => {
                     // Update the predicted_class in the frontend
                     setImageDetails((prevDetails) => ({
@@ -112,7 +112,7 @@ function ImageDetails({match}) {
             <p>Image Name: {imageDetails.image_name}</p>
             <div>
                 <img
-                    src={`/${imageDetails.image_path}`}
+                    src={`/api/${imageDetails.image_path}`}
                     alt={imageDetails.image_name}
                     style={{maxWidth: '600px'}}
                 />

@@ -15,7 +15,8 @@ app.config["UPLOAD_FOLDER"] = "images"
 
 CORS(app)
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+mongodb_url = os.environ.get("MONGODB_URL", "mongodb://localhost:27017/")
+client = pymongo.MongoClient(mongodb_url)
 db = client["learnmof"]
 collection = db["data"]
 

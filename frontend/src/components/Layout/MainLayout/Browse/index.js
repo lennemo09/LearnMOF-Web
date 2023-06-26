@@ -25,7 +25,7 @@ export default function Browse() {
 
     const fetchImages = () => {
         axios
-            .get('/browse', {params: {approved: approved, image_ids: image_ids, assigned_label:assignedLabel}, paramsSerializer: {indexes: null}})
+            .get('/api/browse', {params: {approved: approved, image_ids: image_ids, assigned_label:assignedLabel}, paramsSerializer: {indexes: null}})
             .then((response) => {
                 setImages(response.data);
                 console.log(response.data)
@@ -67,7 +67,7 @@ export default function Browse() {
                                 >
                                     <div onClick={() => handleClickImage(image.db_id)}>
                                         <img
-                                            src={image.image_path}
+                                            src={`/api/${image.image_path}`}
                                             alt={image.image_name}
                                             style={{width: '100%'}}
                                         />
