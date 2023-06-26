@@ -24,7 +24,9 @@ def upload():
 
     global metadata_df
     metadata_df = None
-    metadata_df = get_metadata_from_csv(metadata_file)
+
+    if metadata_file:
+        metadata_df = get_metadata_from_csv(metadata_file)
 
     image_paths = []
     for file in images:
