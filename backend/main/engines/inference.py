@@ -7,7 +7,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 from main import collection, device, model
-from main.enums import BATCH_SIZE, IMG_SIZE, NUM_WORKERS, Label
+from main.enums import BATCH_SIZE, IMG_SIZE, NUM_WORKERS, Label, Metadata, Well
 
 
 class ImageDataset(Dataset):
@@ -126,8 +126,8 @@ def update_inference_to_db(
 def update_metadata(metadata_df):
     df_long = pd.melt(
         metadata_df,
-        id_vars=ID_VARS,
-        value_vars=VALUE_VARS,
+        id_vars=Metadata.get_values(),
+        value_vars=Well.get_values(),
         var_name="well",
         value_name="value",
     )
@@ -165,5 +165,3 @@ def update_metadata(metadata_df):
 
 
 LABEL_MAPPING = {0: Label.CHALLENGING_CRYSTAL, 1: Label.CRYSTAL, 2: Label.NON_CRYSTAL}
-ID_VARS = ["temp", "time", "linker_idx", "acronym", "ctot", "loglmratio", "real_idx"]
-VALUE_VARS = ["well1", "well2", "well3", "well4"]

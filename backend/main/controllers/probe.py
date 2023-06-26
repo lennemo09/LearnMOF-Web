@@ -1,4 +1,4 @@
-from flask import jsonify, render_template
+from flask import jsonify
 
 from main import app
 
@@ -11,8 +11,3 @@ def ping():
 @app.route("/ready", methods=["GET"])
 def is_ready():
     return jsonify({})
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")

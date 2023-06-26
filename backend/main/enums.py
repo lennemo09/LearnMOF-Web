@@ -23,9 +23,24 @@ class Label(BaseEnum):
     NON_CRYSTAL = auto()
 
 
-class_names = {0: "challenging-crystal", 1: "crystal", 2: "non-crystal"}
+class Metadata(BaseEnum):
+    TEMP = auto()
+    TIME = auto()
+    LINKER_IDX = auto()
+    ACRONYM = auto()
+    CTOT = auto()
+    LOGLMRATIO = auto()
+    REAL_IDX = auto()
 
-MODEL_NAME = "../LearnMOF_MODEL_BATCH5_tested_acc95"
+
+class Well(BaseEnum):
+    WELL1 = auto()
+    WELL2 = auto()
+    WELL3 = auto()
+    WELL4 = auto()
+
+
+MODEL_NAME = "./LearnMOF_MODEL_BATCH5_tested_acc95"
 ALLOWED_EXTENSIONS = ("jpg", "jpeg", "png", "gif")
 
 MODEL_DIR = "."
