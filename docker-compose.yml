@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - REACT_APP_API_URL=http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - learnmof
+
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/
+    networks:
+      - learnmof
+
+  mongodb:
+    image: 'mongo:6.0.6-jammy'
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_DATABASE: learnmof
+    volumes:
+      - 'mongodbdata:/data/db'
+    networks:
+      - learnmof
+
+volumes:
+  mongodbdata:
+
+
+networks:
+  learnmof:
