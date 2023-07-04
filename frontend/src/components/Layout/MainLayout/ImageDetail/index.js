@@ -101,7 +101,9 @@ function ImageDetails({match}) {
 
     const layout = {
         xaxis: {range: [0, 1]}, barmode: 'stack', width: 1000, // Set the desired width
-        height: 250,
+        height: 80,
+        margin: {l:0,r:0,b:0,t:0},
+        showlegend: false,
     }
 
     const formattedStartDate = `Experiment date: Day: ${start_day} - Month: ${start_month} - Year: ${start_year}`;
