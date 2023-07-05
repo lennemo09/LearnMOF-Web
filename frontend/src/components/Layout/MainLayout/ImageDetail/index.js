@@ -71,6 +71,7 @@ function ImageDetails({match}) {
         start_year,
         plate_index,
         image_index,
+        well_index,
         linker,
         reaction_time,
         temperature,
@@ -158,6 +159,7 @@ function ImageDetails({match}) {
             <p>{formattedStartDate}</p>
             <p>Plate Index: {plate_index}</p>
             <p>Image Index: {image_index}</p>
+            <p>Well Index: {well_index}</p>
             <p>Linker: {linker}</p>
             <p>Reaction Time: {reaction_time}</p>
             <p>Temperature: {temperature}</p>

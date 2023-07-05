@@ -156,6 +156,9 @@ def result_from_db(db_id):
         "image_index": result_document["image_index"]
         if result_document["image_index"] is not None
         else "n/a",
+        "well_index": result_document["well_index"]
+        if result_document["well_index"] is not None
+        else "n/a",
         "linker": result_document["linker"]
         if result_document["linker"] is not None
         else "n/a",
