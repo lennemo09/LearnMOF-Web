@@ -11,7 +11,7 @@ static_url_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "static")
 )
 app = Flask(__name__, static_url_path=static_url_path)
-app.config["UPLOAD_FOLDER"] = "images"
+app.config["UPLOAD_FOLDER"] = "static/images"
 
 CORS(app)
 

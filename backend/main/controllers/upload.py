@@ -39,7 +39,9 @@ def upload():
         # Check if the file is a zip file
         if file.filename.endswith(".zip"):
             # Save the zip file to the upload folder
-            handle_zip_file(file, file_path)
+            new_paths = handle_zip_file(file, file_path)
+            if new_paths:
+                image_paths.extend(new_paths)
 
         elif file.filename.endswith(".jpg"):
             # Name clashing for jpg uploads
