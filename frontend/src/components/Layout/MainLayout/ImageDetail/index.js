@@ -101,7 +101,7 @@ function ImageDetails({match}) {
     var data = [crystal, challenging_crystal, non_crystal];
 
     const layout = {
-        xaxis: {range: [0, 1]}, barmode: 'stack', width: 1000, // Set the desired width
+        xaxis: {range: [0, 1]}, barmode: 'stack', width: 700, // Set the desired width
         height: 80,
         margin: {l:0,r:0,b:0,t:0},
         showlegend: false,
@@ -111,17 +111,20 @@ function ImageDetails({match}) {
 
 
     return (<div>
-            <h2>Image Details</h2>
-            <p>Image Name: {imageDetails.image_name}</p>
+        <h2>Image Details</h2>
+        <p>Image Name: {imageDetails.image_name}</p>
+    <div style={{ display: 'flex' }}>
+        
+        {/* Left side: Image */}
+        <div style={{ flex: 1, marginRight: '20px' }}>
+            
             <div>
                 <img
                     src={`/api/${imageDetails.image_path}`}
                     alt={imageDetails.image_name}
-                    style={{maxWidth: '600px'}}
+                    style={{maxWidth: '720px'}}
                 />
             </div>
-
-
             {imageDetails.approved ? (<p style={{color: 'green'}}>
                     Predicted Class: {predicted_class} (approved)
                 </p>) : (<p style={{color: 'red'}}>
@@ -140,16 +143,19 @@ function ImageDetails({match}) {
             {/* Buttons */}
             <button onClick={() => handleApprove(imageDetails.db_id, true)}>Approve</button>
             <button onClick={() => handleApprove(imageDetails.db_id, false)}>Tentative</button>
-
-               <div>
-          <h3>Probabilities</h3>
-          <ul>
-            <li>Crystal: {probabilities.crystal.toFixed(3)}</li>
-            <li>Challenging Crystal: {probabilities.challenging_crystal.toFixed(3)}</li>
-            <li>Non Crystal: {probabilities.non_crystal.toFixed(3)}</li>
-          </ul>
         </div>
 
+         {/* Right side: Details */}
+         <div style={{ flex: 1 }}>
+            <div>
+                <h3>Probabilities</h3>
+                <ul>
+                    <li>Crystal: {probabilities.crystal.toFixed(3)}</li>
+                    <li>Challenging Crystal: {probabilities.challenging_crystal.toFixed(3)}</li>
+                    <li>Non Crystal: {probabilities.non_crystal.toFixed(3)}</li>
+                </ul>
+            </div>
+            
             <div>
                 <Plot data={data} layout={layout}/>
             </div>
@@ -165,6 +171,8 @@ function ImageDetails({match}) {
             <p>Temperature: {temperature}</p>
             <p>Ctot: {ctot}</p>
             <p>Loglmratio: {loglmratio}</p>
+        </div>
+        </div>
         </div>);
 };
 
