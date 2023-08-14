@@ -64,29 +64,30 @@ def handle_zip_file(file, file_path):
 
     image_paths = []
 
-    # Check the extracted files for directories and non-image files
+    # Recursively search for image files in the extracted directory
+    def search_for_images(directory):
+        new_image_files = []
+        for root, dirs, files in os.walk(directory):
+            for extracted_file in files:
+                extracted_file_path = os.path.join(root, extracted_file)
+
+                if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
+                    continue
+
+                new_image_files.append(extracted_file_path)
+
+        return new_image_files
+
     extracted_files = os.listdir("temp")
-    new_image_files = []
-    for extracted_file in extracted_files:
-        extracted_file_path = "temp" + "/" + extracted_file
-
-        if os.path.isdir(
-            extracted_file_path
-        ) or not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
-            # Raise an error if a directory is found
-            os.remove(extracted_file_path)
-            return "Zip file contains directories", 400
-
-        if extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
-            new_image_files.append(extracted_file_path)
+    found_image_files = search_for_images("temp")
 
     # Raise an error if no image files are found
-    if not new_image_files:
+    if not found_image_files:
         return "Zip file does not contain any images", 400
 
     # Move the image files to the UPLOAD_FOLDER directory
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-    for image_file in new_image_files:
+    for image_file in found_image_files:
         # if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
         #     continue
         print(image_file)
