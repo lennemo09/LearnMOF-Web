@@ -71,6 +71,7 @@ function ImageDetails({match}) {
         start_year,
         plate_index,
         image_index,
+        well_index,
         linker,
         reaction_time,
         temperature,
@@ -101,7 +102,9 @@ function ImageDetails({match}) {
 
     const layout = {
         xaxis: {range: [0, 1]}, barmode: 'stack', width: 1000, // Set the desired width
-        height: 250,
+        height: 80,
+        margin: {l:0,r:0,b:0,t:0},
+        showlegend: false,
     }
 
     const formattedStartDate = `Experiment date: Day: ${start_day} - Month: ${start_month} - Year: ${start_year}`;
@@ -156,6 +159,7 @@ function ImageDetails({match}) {
             <p>{formattedStartDate}</p>
             <p>Plate Index: {plate_index}</p>
             <p>Image Index: {image_index}</p>
+            <p>Well Index: {well_index}</p>
             <p>Linker: {linker}</p>
             <p>Reaction Time: {reaction_time}</p>
             <p>Temperature: {temperature}</p>

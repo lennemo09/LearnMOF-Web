@@ -1,13 +1,16 @@
 import os
+import re
 
-import pandas as pd
+import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 from main import collection, device, model
-from main.enums import BATCH_SIZE, IMG_SIZE, NUM_WORKERS, Label, Metadata, Well
+from main.enums import BATCH_SIZE, IMG_SIZE, NUM_WORKERS, Label
+
+WELLS_PER_ROW = 4
 
 
 class ImageDataset(Dataset):
@@ -106,6 +109,7 @@ def update_inference_to_db(
                 "start_date_month": None,
                 "start_date_day": None,
                 "plate_index": None,
+                "well_index": None,
                 "image_index": None,
                 "magnification": None,
                 "reaction_time": None,
@@ -117,28 +121,30 @@ def update_inference_to_db(
             added_entry = collection.insert_one(new_db_entry)
             images_db_id.append(str(added_entry.inserted_id))
 
-    if metadata_df is not None:
-        update_metadata(metadata_df)
+        if metadata_df is not None:
+            update_metadata(image_name, metadata_df)
 
     return images_db_id
 
 
-def update_metadata(metadata_df):
-    df_long = pd.melt(
-        metadata_df,
-        id_vars=Metadata.get_values(),
-        value_vars=Well.get_values(),
-        var_name="well",
-        value_name="value",
-    )
-    df = df_long.drop(columns="well").rename(columns={"value": "well"})
+def update_metadata(image_name, metadata_df):
+    if re.match(r"position(\d*).jpg", image_name):
+        image_index = int(re.match(r"position(\d*).jpg", image_name).group(1))
+        magnification = None
+    elif re.match(r"^\d{8}-(\d*)-(\d*)x_position(\d*).jpg$", image_name):
+        match = re.match(r"^\d{8}-(\d*)-(\d*)x_position(\d*).jpg$", image_name)
+        image_index = int(match.group(3))
+        magnification = int(match.group(2))
+    else:
+        image_index = None
 
-    for index, row in df.iterrows():
-        position = str(row["well"]).zfill(3)
-        image_name = f"position{position}.jpg"
+    myquery = {"image_name": image_name}
 
-        myquery = {"image_name": image_name}
-        image_index = int(image_name[8:11])
+    if image_index is not None:
+        well_index = int((image_index - 1) // WELLS_PER_ROW) + 1
+        row_index = int(np.ceil(well_index / WELLS_PER_ROW)) - 1
+
+        row = metadata_df.iloc[row_index]
 
         real_idx = row["real_idx"]
         year = int(real_idx[:4])
@@ -149,6 +155,7 @@ def update_metadata(metadata_df):
         newvalues = {
             "$set": {
                 "linker": row["acronym"],
+                "magnification": magnification,
                 "reaction_time": row["time"],
                 "temperature": row["temp"],
                 "ctot": row["ctot"],
@@ -158,9 +165,9 @@ def update_metadata(metadata_df):
                 "start_date_day": day,
                 "plate_index": plate_index,
                 "image_index": image_index,
+                "well_index": well_index,
             }
         }
-
         collection.update_one(myquery, newvalues)
 
 

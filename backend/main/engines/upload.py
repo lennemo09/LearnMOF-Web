@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import zipfile
 
@@ -7,6 +8,8 @@ from PIL import Image
 
 from main import app
 from main.enums import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
+
+ZIP_FILE_PATTERN = r"^\d{8}-(\d*)-(\d*)x$"
 
 
 def get_metadata_from_csv(metadata_file):
@@ -43,50 +46,75 @@ def handle_zip_file(file, file_path):
     # Save the zip file to the upload folder
     file.save(file_path)
 
+    # Get the base filename from the file path
+    filename = os.path.basename(file_path)
+
+    # Get the filename without the extension
+    filename_without_extension = os.path.splitext(filename)[0]
+    print(f"Zip file name: {filename_without_extension}")
     # Extract the zip file
     with zipfile.ZipFile(file_path, "r") as zip_ref:
         zip_ref.extractall("temp")
 
+    # Check if the filename matches the pattern
+    match = re.match(ZIP_FILE_PATTERN, filename_without_extension)
+
     # Remove the zip file
     os.remove(file_path)
 
-    # Check the extracted files for directories and non-image files
+    image_paths = []
+
+    # Recursively search for image files in the extracted directory
+    def search_for_images(directory):
+        new_image_files = []
+        for root, dirs, files in os.walk(directory):
+            for extracted_file in files:
+                extracted_file_path = os.path.join(root, extracted_file)
+
+                if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
+                    continue
+
+                new_image_files.append(extracted_file_path)
+
+        return new_image_files
+
     extracted_files = os.listdir("temp")
-    new_image_files = []
-    for extracted_file in extracted_files:
-        extracted_file_path = "temp" + "/" + extracted_file
-
-        if os.path.isdir(
-            extracted_file_path
-        ) or not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
-            # Raise an error if a directory is found
-            os.remove(extracted_file_path)
-            return "Zip file contains directories", 400
-
-        if extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
-            new_image_files.append(extracted_file_path)
+    found_image_files = search_for_images("temp")
 
     # Raise an error if no image files are found
-    if not new_image_files:
+    if not found_image_files:
         return "Zip file does not contain any images", 400
 
     # Move the image files to the UPLOAD_FOLDER directory
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-    for image_file in new_image_files:
+    for image_file in found_image_files:
         # if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
         #     continue
+        print(image_file)
+        if not match:
+            new_filename = os.path.basename(image_file)
+        else:
+            image_filename = os.path.basename(image_file)
+            image_file_without_extension, image_file_extension = (
+                os.path.splitext(image_filename)[0],
+                os.path.splitext(image_filename)[1],
+            )
+            new_filename = f"{filename_without_extension}_{image_file_without_extension}{image_file_extension}"
+            print(f"DIRNAME: {os.path.dirname(image_file)}")
+            new_image_file = f"{os.path.dirname(image_file)}/{new_filename}"
+            os.rename(image_file, new_image_file)
+            image_file = new_image_file
 
-        destination_path = (
-            app.config["UPLOAD_FOLDER"] + "/" + os.path.basename(image_file)
-        )
+        destination_path = f"{app.config['UPLOAD_FOLDER']}/{new_filename}"
 
         # Check if file with same name exists
         if os.path.exists(destination_path):
             destination_path = rename_image_with_suffix(
                 image_file, app.config["UPLOAD_FOLDER"]
             )
-
+        image_paths.append(destination_path)
         shutil.move(image_file, destination_path)
+    return image_paths
 
 
 def rename_image_with_suffix(image_file, destination_dir):

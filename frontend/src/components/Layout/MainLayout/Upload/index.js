@@ -32,9 +32,12 @@ function FileUpload() {
             }
 
             try {
+                // Write toast notification saying "Uploading images..."
+                toast.info("Uploading images...");
                 const uploadResponse = await axios.post('/api/upload', formData);
                 console.log(uploadResponse.data); // Handle the response from the backend
                 setUploadSuccess(true);
+                toast.info("Upload succeeded. Processing images...");
 
                 const image_paths = uploadResponse.data.image_paths;
 
@@ -81,7 +84,7 @@ function FileUpload() {
             </div>
 
             <button onClick={handleSubmit}>Upload</button>
-            {uploadSuccess && <p>Files uploaded successfully</p>}
+            {uploadSuccess && <p>Files uploaded successfully. Redirecting to batch results...</p>}
             <ToastContainer/> {/* Toaster container for displaying notifications */}
         </div>
     );

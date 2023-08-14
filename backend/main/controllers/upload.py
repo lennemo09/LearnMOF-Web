@@ -39,7 +39,9 @@ def upload():
         # Check if the file is a zip file
         if file.filename.endswith(".zip"):
             # Save the zip file to the upload folder
-            handle_zip_file(file, file_path)
+            new_paths = handle_zip_file(file, file_path)
+            if new_paths:
+                image_paths.extend(new_paths)
 
         elif file.filename.endswith(".jpg"):
             # Name clashing for jpg uploads
@@ -153,6 +155,9 @@ def result_from_db(db_id):
         else "n/a",
         "image_index": result_document["image_index"]
         if result_document["image_index"] is not None
+        else "n/a",
+        "well_index": result_document["well_index"]
+        if result_document["well_index"] is not None
         else "n/a",
         "linker": result_document["linker"]
         if result_document["linker"] is not None
