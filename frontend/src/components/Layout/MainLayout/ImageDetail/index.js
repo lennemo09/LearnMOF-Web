@@ -27,7 +27,8 @@ function ImageDetails({match}) {
         fetchImageDetails();
     }, [image_url]);
 
-    const [selectedLabel, setSelectedLabel] = useState('crystal');
+    const [selectedLabel, setSelectedLabel] = useState(imageDetails.predicted_class);
+
     const handleApprove = useCallback(
         (dbId, isApproved) => {
 
