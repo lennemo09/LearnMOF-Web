@@ -177,3 +177,9 @@ def result_from_db(db_id):
     }
 
     return jsonify(result)
+
+@app.route('/all_image_ids')
+def get_all_image_ids():
+    image_ids = collection.find({}, {"_id": 1})
+    image_ids_list = [str(image_id["_id"]) for image_id in image_ids]  # Convert ObjectId to str
+    return jsonify(image_ids_list)

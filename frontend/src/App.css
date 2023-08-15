@@ -36,3 +36,56 @@
     transform: rotate(360deg);
   }
 }
+
+.nav-button {
+  margin: 0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #007bff;
+  border: 2px solid #007bff; /* Green border */
+  cursor: pointer;
+}
+
+.nav-button:hover {
+  margin: 0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.approve-button,
+.tentative-button {
+    margin: 0;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.approve-button {
+    background-color: transparent;
+    color: #00bf06;
+    border: 2px solid #00bf06; /* Green border */
+}
+
+.tentative-button {
+    background-color: transparent;
+    color: #ff7b00;
+    border: 2px solid #ff7b00; /* Orange border */
+}
+  
+/* Change the background and border color on hover */
+.approve-button:hover {
+    background-color: rgba(0, 255, 8, 0.1); /* Light green background on hover */
+    border-color: #00bf06; /* Green border color on hover */
+}
+
+.tentative-button:hover {
+  background-color: rgba(255, 132, 0, 0.1); /* Light green background on hover */
+  border-color: #ff7b00; /* Green border color on hover */
+}
