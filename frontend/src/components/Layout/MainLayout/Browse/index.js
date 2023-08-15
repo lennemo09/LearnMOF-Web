@@ -48,7 +48,7 @@ export default function Browse() {
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    justifyContent: 'space-between',
+                    justifyContent: 'start',
                     marginTop: '20px',
                     margin: '20px'
                 }}
@@ -59,7 +59,7 @@ export default function Browse() {
                                     key={image.db_id}
                                     style={{
                                         width: '300px',
-                                        margin: '10px',
+                                        margin: '30px',
                                         boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)',
                                         borderRadius: '5px',
                                         overflow: 'hidden',
@@ -71,18 +71,18 @@ export default function Browse() {
                                             alt={image.image_name}
                                             style={{width: '100%'}}
                                         />
-                                    </div>
-                                    <div style={{padding: '10px'}}>
-                                        <h5 style={{marginBottom: '5px'}}>{image.image_name}</h5>
-                                        <p style={{marginBottom: '5px'}}>Assigned Label: {image.assigned_label}</p>
-                                        <p
-                                            style={{
-                                                marginBottom: '0',
-                                                color: image.approved ? 'green' : 'red',
-                                            }}
-                                        >
-                                            Approved: {image.approved ? 'Yes' : 'No'}
-                                        </p>
+                                        <div style={{padding: '10px'}}>
+                                            <h5 style={{marginBottom: '5px'}}>{image.image_name}</h5>
+                                            <p style={{marginBottom: '5px'}}>Assigned Label: {image.assigned_label}</p>
+                                            <p
+                                                style={{
+                                                    marginBottom: '0',
+                                                    color: image.approved ? 'green' : 'red',
+                                                }}
+                                            >
+                                                Approved: {image.approved ? 'Yes' : 'No'}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             )

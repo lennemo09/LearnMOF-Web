@@ -54,8 +54,6 @@ function ImageDetails({match}) {
         }
     }, [selectedLabel, imageDetails]);
 
-
-
     if (!imageDetails) {
         return <p>Loading...</p>;
     }
@@ -122,7 +120,7 @@ function ImageDetails({match}) {
                 <img
                     src={`/api/${imageDetails.image_path}`}
                     alt={imageDetails.image_name}
-                    style={{maxWidth: '720px'}}
+                    style={{maxWidth: '700px'}}
                 />
             </div>
             {imageDetails.approved ? (<p style={{color: 'green'}}>
