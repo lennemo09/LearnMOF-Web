@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
 import Plot from 'react-plotly.js';
+import {useLocation, useHistory} from "react-router-dom";
 import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -8,7 +9,10 @@ import 'react-toastify/dist/ReactToastify.css';
 function ImageDetails({match}) {
     const {image_url} = match.params;
     const [imageDetails, setImageDetails] = useState(null);
+    const [previousImageId, setPreviousImageId] = useState(null); // Define the state
+    const [nextImageId, setNextImageId] = useState(null); // Define the state
 
+    const history = useHistory();
 
     useEffect(() => {
         // Fetch image details from the backend based on the image name
@@ -25,9 +29,42 @@ function ImageDetails({match}) {
         };
 
         fetchImageDetails();
+
+        // Fetch all image IDs from Flask backend
+        axios.get('/api/all_image_ids')
+        .then(response => {
+            const imageIds = response.data;
+            const currentIndex = imageIds.findIndex((id) => id === image_url);
+            console.log(imageIds);
+            console.log(currentIndex);
+            // Determine IDs of images before and after
+            const previousId = currentIndex > 0 ? imageIds[currentIndex - 1] : imageIds[imageIds.length - 1];
+            const nextId = currentIndex < imageIds.length - 1 ? imageIds[currentIndex + 1] : imageIds[0] ;
+
+            // Use previousImageId and nextImageId as needed
+            setPreviousImageId(previousId); // Update the state
+            setNextImageId(nextId); // Update the state
+            console.log(previousImageId, nextImageId)
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
     }, [image_url]);
 
-    const [selectedLabel, setSelectedLabel] = useState(imageDetails.predicted_class);
+    const [selectedLabel, setSelectedLabel] = useState('crystal');
+
+    const goToPreviousImage = () => {
+        if (previousImageId) {
+            history.push(`/browse/${previousImageId}`);
+        }
+    };
+
+    const goToNextImage = () => {
+        if (nextImageId) {
+            history.push(`/browse/${nextImageId}`);
+        }
+    };
 
     const handleApprove = useCallback(
         (dbId, isApproved) => {
@@ -57,7 +94,7 @@ function ImageDetails({match}) {
 
     if (!imageDetails) {
         return <p>Loading...</p>;
-    }
+    }  
 
     const {
         image_name,
@@ -110,8 +147,27 @@ function ImageDetails({match}) {
 
 
     return (<div>
-        <h2>Image Details</h2>
-        <p>Image Name: {imageDetails.image_name}</p>
+
+    <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1, marginRight: '20px' }}>
+            <h2>Image Details</h2>
+            <p>Image Name: {imageDetails.image_name}</p>
+        </div>
+        
+        {/* Next and Previous buttons */}
+        <div style={{ flex: 1 }}> 
+        <br/>
+        <br/>
+            <button className="nav-button" onClick={goToPreviousImage} disabled={!previousImageId}>
+                ❮
+            </button>
+            <span style={{margin: '0 10px'}}></span>
+            <button className="nav-button" onClick={goToNextImage} disabled={!nextImageId}>
+                ❯
+            </button>
+        </div>
+    </div>
+    
     <div style={{ display: 'flex' }}>
         
         {/* Left side: Image */}
@@ -140,8 +196,15 @@ function ImageDetails({match}) {
             </select>
 
             {/* Buttons */}
-            <button onClick={() => handleApprove(imageDetails.db_id, true)}>Approve</button>
-            <button onClick={() => handleApprove(imageDetails.db_id, false)}>Tentative</button>
+            <span style={{margin: '0 10px'}}>|</span>
+            <button className="approve-button" onClick={() => handleApprove(imageDetails.db_id, true)}>Approve</button>
+            <span style={{margin: '0 10px'}}></span>
+            <button className="tentative-button" onClick={() => handleApprove(imageDetails.db_id, false)}>Tentative</button>
+
+            <br/>
+            <br/>
+
+            
         </div>
 
          {/* Right side: Details */}
@@ -150,8 +213,8 @@ function ImageDetails({match}) {
                 <h3>Probabilities</h3>
                 <ul>
                     <li>Crystal: {probabilities.crystal.toFixed(3)}</li>
-                    <li>Challenging Crystal: {probabilities.challenging_crystal.toFixed(3)}</li>
-                    <li>Non Crystal: {probabilities.non_crystal.toFixed(3)}</li>
+                    <li>Challenging crystal: {probabilities.challenging_crystal.toFixed(3)}</li>
+                    <li>Non-crystal: {probabilities.non_crystal.toFixed(3)}</li>
                 </ul>
             </div>
             
