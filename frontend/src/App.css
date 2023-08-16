@@ -37,6 +37,13 @@
   }
 }
 
+.content-box {
+  background-color: #f8f8f8;
+  border-radius: 15px;
+  padding: 10px;
+  margin: 30px 30px;
+}
+
 .nav-button {
   margin: 0;
   padding: 10px 20px;
@@ -88,4 +95,22 @@
 .tentative-button:hover {
   background-color: rgba(255, 132, 0, 0.1); /* Light green background on hover */
   border-color: #ff7b00; /* Green border color on hover */
+}
+
+.filter-bar{
+  display: flex;
+  justify-content: start;
+}
+
+.filter-field{
+  flex: initial;
+  padding-right: 10px;
+}
+
+.browse-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin: 20px;
 }

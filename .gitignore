@@ -4,3 +4,4 @@ static/
 app.py~
 Dockerfile
 LearnMOF_MODEL_BATCH5_tested_acc95
+gittoken.txt

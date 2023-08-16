@@ -3,7 +3,7 @@ import Layout from "./components/Layout";
 
 function App() {
   return (
-    <div style={{ margin: '0 auto', maxWidth: '1500px', padding: '20px' }}>
+    <div style={{ maxWidth: '100%' }}>
       <Layout />
     </div>
   );

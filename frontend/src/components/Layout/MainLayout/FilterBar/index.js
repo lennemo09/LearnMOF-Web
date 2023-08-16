@@ -69,65 +69,67 @@ export default function FilterBar() {
     return (
         <div>
             <h3>Filter Options</h3>
-            <div>
-                <label htmlFor="label">Label:</label>
-                <select id="label" value={label} onChange={(e) => setLabel(e.target.value)}>
-                    <option value="">All</option>
-                    {labelOptions.map((option, index) => (
-                        <option key={index} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div>
-                <label htmlFor="status">Label Status:</label>
-                <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="">All</option>
-                    {statusOptions.map((option, index) => (
-                        <option key={index} value={option}>
-                            {option ? "Approved" : "Tentative"}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div>
-                <label htmlFor="linker">Linker:</label>
-                <select id="linker" value={linker} onChange={(e) => setLinker(e.target.value)}>
-                    <option value="">All</option>
-                        {linkerOptions.map((option, index) => (
+            <div className="filter-bar">
+                <div className="filter-field">
+                    <label htmlFor="label">Label: </label>
+                    <select id="label" value={label} onChange={(e) => setLabel(e.target.value)}>
+                        <option value="">All</option>
+                        {labelOptions.map((option, index) => (
                             <option key={index} value={option}>
                                 {option}
                             </option>
                         ))}
-                </select>
-            </div>
-            <div>
-                <label htmlFor="magnification">Magnification:</label>
-                <select id="magnification" value={magnification} onChange={(e) => setMagnification(e.target.value)}>
-                    <option value="">All</option>
-                        {magnificationOptions.map((option, index) => (
-                            <option key={index} value={option}>{option}</option>
+                    </select>
+                </div>
+                <div className="filter-field">
+                    <label htmlFor="status">Label Status: </label>
+                    <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
+                        <option value="">All</option>
+                        {statusOptions.map((option, index) => (
+                            <option key={index} value={option}>
+                                {option ? "Approved" : "Tentative"}
+                            </option>
                         ))}
-                </select>
-            </div>
-            <div>
-                <label htmlFor="reactionTime">Reaction time</label>
-                <select id="reactionTime" value={reactionTime} onChange={(e) => setReactionTime(e.target.value)}>
-                    <option value="">All</option>
-                        {reactionTimeOptions.map((option, index) => (
-                            <option key={index} value={option}>{option}</option>
-                        ))}
-                </select>
-            </div>
-            <div>
-                <label htmlFor="temperature">Temperature:</label>
-                <select id="temperature" value={temperature} onChange={(e) => setTemperature(e.target.value)}>
-                    <option value="">All</option>
-                        {temperatureOptions.map((option, index) => (
-                            <option key={index} value={option}>{option}</option>
-                        ))}
-                </select>
+                    </select>
+                </div>
+                <div className="filter-field">
+                    <label htmlFor="linker">Linker: </label>
+                    <select id="linker" value={linker} onChange={(e) => setLinker(e.target.value)}>
+                        <option value="">All</option>
+                            {linkerOptions.map((option, index) => (
+                                <option key={index} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div className="filter-field">
+                    <label htmlFor="magnification">Magnification: </label>
+                    <select id="magnification" value={magnification} onChange={(e) => setMagnification(e.target.value)}>
+                        <option value="">All</option>
+                            {magnificationOptions.map((option, index) => (
+                                <option key={index} value={option}>{option}</option>
+                            ))}
+                    </select>
+                </div>
+                <div className="filter-field">
+                    <label htmlFor="reactionTime">Reaction time: </label>
+                    <select id="reactionTime" value={reactionTime} onChange={(e) => setReactionTime(e.target.value)}>
+                        <option value="">All</option>
+                            {reactionTimeOptions.map((option, index) => (
+                                <option key={index} value={option}>{option}</option>
+                            ))}
+                    </select>
+                </div>
+                <div className="filter-field">
+                    <label htmlFor="temperature">Temperature: </label>
+                    <select id="temperature" value={temperature} onChange={(e) => setTemperature(e.target.value)}>
+                        <option value="">All</option>
+                            {temperatureOptions.map((option, index) => (
+                                <option key={index} value={option}>{option}</option>
+                            ))}
+                    </select>
+                </div>
             </div>
 
             <button onClick={handleApplyFilter}>Apply</button>

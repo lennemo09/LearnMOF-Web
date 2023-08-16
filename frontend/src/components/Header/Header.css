@@ -1,12 +1,22 @@
 .nav {
-  background: #f0f0f0;
-  padding: 10px;
+  background: #434343;
+  color: white;
+  justify-content: start;
+  align-items: start;
+  margin: 0;
+  padding: 20px;
+  width: 100%;
+}
+
+.header-bar{
+  width: 100%;
 }
 
 .ul {
   list-style: none;
   display: flex;
-  justify-content: center;
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
 }
 
 .li {
@@ -15,5 +25,10 @@
 
 .link {
   text-decoration: none;
-  color: #333;
+  color: #fff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
 }

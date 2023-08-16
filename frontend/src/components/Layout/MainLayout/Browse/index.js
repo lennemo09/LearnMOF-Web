@@ -44,15 +44,7 @@ export default function Browse() {
         <div>
             <h1 style={{marginTop: '20px', textAlign: 'center'}}>Database</h1>
             <FilterBar/>
-            <div
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    justifyContent: 'start',
-                    marginTop: '20px',
-                    margin: '20px'
-                }}
-            >
+            <div className='browse-content'>
                 {images.length > 0 ? (
                         images.map((image) => (
                                 <div

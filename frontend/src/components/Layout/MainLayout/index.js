@@ -4,10 +4,11 @@ import FileUpload from "./Upload";
 import Browse from './Browse'
 import ImageDetail from "./ImageDetail";
 import Home from "./Home";
+import '../../../App.css';
 
 export default function MainLayout() {
     return (
-        <div style={{backgroundColor: '#f4f5f7', marginTop: '20px'}}>
+        <div className='content-box'>
             <div style={{ marginLeft: '20px' }}>
                 <Switch>
                     <Route exact path="/" component={Home}/>
