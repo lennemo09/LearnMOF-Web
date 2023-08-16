@@ -53,13 +53,13 @@ export default function FilterBar() {
             queryParams.append('linker', linker);
         }
         if (magnification) {
-            queryParams.append('magnification', magnification);
+            queryParams.append('magnification', parseInt(magnification));
         }
         if (reactionTime) {
-            queryParams.append('reaction_time', reactionTime);
+            queryParams.append('reaction_time', parseInt(reactionTime));
         }
         if (temperature) {
-            queryParams.append('temperature', temperature);
+            queryParams.append('temperature', parseInt(temperature));
         }
 
         console.log(queryParams)
