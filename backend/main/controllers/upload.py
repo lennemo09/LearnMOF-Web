@@ -112,9 +112,9 @@ def browse(args: GetFilteredImagesSchema):
         }
         images.append(image_data)
 
-    image_ids = collection.find({}, {"_id": 1})
 
     global image_ids_list
+    image_ids = collection.find({}, {"_id": 1})
     image_ids_list = [str(image_id["_id"]) for image_id in image_ids]  # Convert ObjectId to str
 
     return jsonify(images)
@@ -186,3 +186,39 @@ def result_from_db(db_id):
 @app.route('/all_image_ids')
 def get_all_image_ids():
     return jsonify(image_ids_list)
+
+@app.route('/filter_unique_values')
+def get_unique_values():
+
+    pipeline = [
+        {"$group": {
+            "_id": None,
+            "labelOptions": {"$addToSet": "$assigned_label"},
+            "statusOptions": {"$addToSet": "$approved"},
+            "linkerOptions": {"$addToSet": "$linker"},
+            "magnificationOptions": {"$addToSet": "$magnification"},
+            "startYearOptions": {"$addToSet": "$start_date_year"},
+            "startMonthOptions": {"$addToSet": "$start_date_month"},
+            "startDayOptions": {"$addToSet": "$start_date_day"},
+            "reactionTimeOptions": {"$addToSet": "$reaction_time"},
+            "temperatureOptions": {"$addToSet": "$temperature"}
+        }},
+        {"$project": {
+            "_id": 0,
+            "labelOptions": 1,
+            "statusOptions": 1,
+            "linkerOptions": 1,
+            "magnificationOptions": 1,
+            "startYearOptions": 1,
+            "startMonthOptions": 1,
+            "startDayOptions": 1,
+            "reactionTimeOptions": 1,
+            "temperatureOptions": 1
+        }}
+    ]
+    
+    distinct_values = list(collection.aggregate(pipeline))
+    if distinct_values:
+        return jsonify(distinct_values[0])
+    else:
+        return jsonify({})

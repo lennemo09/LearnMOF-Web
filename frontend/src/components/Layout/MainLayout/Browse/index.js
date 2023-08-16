@@ -14,7 +14,7 @@ export default function Browse() {
     const image_ids = queryParams.getAll('image_ids');
 
 
-    console.log(image_ids)
+    // console.log(image_ids)
     const approved = queryParams.get("approved")
     const assignedLabel = queryParams.get("assigned_label")
 
