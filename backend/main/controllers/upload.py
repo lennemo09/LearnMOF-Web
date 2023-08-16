@@ -12,7 +12,7 @@ from main.schemas.browse import GetFilteredImagesSchema, UpdateApproval
 from main.schemas.inference import UpdateProcessImage
 
 metadata_df = None
-
+image_ids_list = []
 
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -112,6 +112,11 @@ def browse(args: GetFilteredImagesSchema):
         }
         images.append(image_data)
 
+    image_ids = collection.find({}, {"_id": 1})
+
+    global image_ids_list
+    image_ids_list = [str(image_id["_id"]) for image_id in image_ids]  # Convert ObjectId to str
+
     return jsonify(images)
 
 
@@ -180,6 +185,4 @@ def result_from_db(db_id):
 
 @app.route('/all_image_ids')
 def get_all_image_ids():
-    image_ids = collection.find({}, {"_id": 1})
-    image_ids_list = [str(image_id["_id"]) for image_id in image_ids]  # Convert ObjectId to str
     return jsonify(image_ids_list)
