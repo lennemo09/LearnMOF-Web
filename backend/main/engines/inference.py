@@ -155,17 +155,17 @@ def update_metadata(image_name, metadata_df):
         newvalues = {
             "$set": {
                 "linker": row["acronym"],
-                "magnification": magnification,
-                "reaction_time": row["time"],
-                "temperature": row["temp"],
-                "ctot": row["ctot"],
-                "loglmratio": row["loglmratio"],
-                "start_date_year": year,
-                "start_date_month": month,
-                "start_date_day": day,
-                "plate_index": plate_index,
-                "image_index": image_index,
-                "well_index": well_index,
+                "magnification": int(magnification),
+                "reaction_time": int(row["time"]),
+                "temperature": int(row["temp"]),
+                "ctot": float(row["ctot"]),
+                "loglmratio": float(row["loglmratio"]),
+                "start_date_year": str(year),
+                "start_date_month": str(month),
+                "start_date_day": str(day),
+                "plate_index": int(plate_index),
+                "image_index": int(image_index),
+                "well_index": int(well_index),
             }
         }
         collection.update_one(myquery, newvalues)

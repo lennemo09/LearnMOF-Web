@@ -110,8 +110,8 @@ def browse(args: GetFilteredImagesSchema):
             "approved": entry.get("approved", ""),
             "assigned_label": entry.get("assigned_label", ""),
             "linker": entry.get("linker", ""),
-            "temperature": entry.get("temperature", ""),
-            "reaction_time": entry.get("reaction_time", "")
+            "temperature": entry.get("temperature", None),
+            "reaction_time": entry.get("reaction_time", None)
         }
         images.append(image_data)
 

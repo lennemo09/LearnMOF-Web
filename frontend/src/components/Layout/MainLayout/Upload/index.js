@@ -8,6 +8,7 @@ function FileUpload() {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [selectedMetadata, setSelectedMetadata] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [processSuccess, setProcessSuccess] = useState(false);
     const history = useHistory();
 
     const handleFileUpload = (event) => {
@@ -34,7 +35,13 @@ function FileUpload() {
             try {
                 // Write toast notification saying "Uploading images..."
                 toast.info("Uploading images...");
-                const uploadResponse = await axios.post('/api/upload', formData);
+                const uploadResponse = await axios.post('/api/upload', formData, {
+                    onUploadProgress: (progressEvent) => {
+                        const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        // Update your progress indicator here, e.g., setUploadProgress(progress);
+                        console.log(`Upload Progress: ${progress}%`);
+                    }
+                });
                 console.log(uploadResponse.data); // Handle the response from the backend
                 setUploadSuccess(true);
                 toast.info("Upload succeeded. Processing images...");
@@ -44,6 +51,7 @@ function FileUpload() {
                 const processResponse = await axios.post('/api/process_images', {
                     image_paths,
                 });
+                setProcessSuccess(true);
                 console.log(processResponse)
                 const image_ids = processResponse.data
                 const queryParams = image_ids.map((image_id) => `image_ids=${image_id}`).join('&');
@@ -84,7 +92,8 @@ function FileUpload() {
             </div>
 
             <button onClick={handleSubmit}>Upload</button>
-            {uploadSuccess && <p>Files uploaded successfully. Redirecting to batch results...</p>}
+            {uploadSuccess && <p>Files uploaded successfully. Waiting for images to be processed...</p>}
+            {processSuccess && <p>Images processed successfully. Redirecting to database view...</p>}
             <ToastContainer/> {/* Toaster container for displaying notifications */}
         </div>
     );

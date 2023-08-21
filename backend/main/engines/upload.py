@@ -51,7 +51,7 @@ def handle_zip_file(file, file_path):
 
     # Get the filename without the extension
     filename_without_extension = os.path.splitext(filename)[0]
-    print(f"Zip file name: {filename_without_extension}")
+    print(f"Extracting Zip file: {filename_without_extension}")
     # Extract the zip file
     with zipfile.ZipFile(file_path, "r") as zip_ref:
         zip_ref.extractall("temp")
@@ -85,12 +85,14 @@ def handle_zip_file(file, file_path):
     if not found_image_files:
         return "Zip file does not contain any images", 400
 
+    print("Moving files to upload folder")
     # Move the image files to the UPLOAD_FOLDER directory
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     for image_file in found_image_files:
+        print(image_file)
         # if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
         #     continue
-        print(image_file)
+        # print(image_file)
         if not match:
             new_filename = os.path.basename(image_file)
         else:
@@ -100,7 +102,7 @@ def handle_zip_file(file, file_path):
                 os.path.splitext(image_filename)[1],
             )
             new_filename = f"{filename_without_extension}_{image_file_without_extension}{image_file_extension}"
-            print(f"DIRNAME: {os.path.dirname(image_file)}")
+            # print(f"DIRNAME: {os.path.dirname(image_file)}")
             new_image_file = f"{os.path.dirname(image_file)}/{new_filename}"
             os.rename(image_file, new_image_file)
             image_file = new_image_file
