@@ -51,6 +51,7 @@ function FileUpload() {
                 // Write toast notification saying "Uploading images..."
                 toast.info("Uploading images...");
                 const uploadResponse = await axios.post('/api/upload', formData, {
+                    timeout: 6000000,
                     onUploadProgress: (progressEvent) => {
                         const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                         // Update your progress indicator here, e.g., setUploadProgress(progress);
@@ -58,29 +59,39 @@ function FileUpload() {
                         setUploadProgress(progress);
                     }
                 });
+
                 console.log(uploadResponse.data); // Handle the response from the backend
-                setUploadSuccess(true);
-                setUploadProgress(100);
-                toast.info("Upload succeeded. Processing images...");
 
-                const image_paths = uploadResponse.data.image_paths;
+                if (uploadProgress.data)
+                {
+                    setUploadSuccess(true);
+                    setUploadProgress(100);
+                    toast.info("Upload succeeded. Processing images...");
+                    const image_paths = uploadResponse.data.image_paths;
 
-                const processResponse = await axios.post('/api/process_images', {
-                    image_paths, processId,
-                });
-                console.log(processResponse)
-                setPreparingSuccess(true);
-                
-                const image_ids = processResponse.data.image_ids
-                const queryParams = image_ids.map((image_id) => `image_ids=${image_id}`).join('&');
-                
-                setInferenceSuccess(true);
+                    const processResponse = await axios.post('/api/process_images', {
+                        timeout: 6000000,
+                        image_paths, processId,
+                    });
 
-                history.push(`/browse?${queryParams}`);
+                    if (processResponse.data) {
+                        console.log(processResponse)
+                        setPreparingSuccess(true);
+                        
+                        const image_ids = processResponse.data.image_ids
+                        const queryParams = image_ids.map((image_id) => `image_ids=${image_id}`).join('&');
+                        
+                        setInferenceSuccess(true);
+        
+                        history.push(`/browse?${queryParams}`);
+                    }
+                }
+
+
             } catch
                 (error) {
-                console.error(error.response.data); // Handle error if any
-                toast.error(error.response.data); // Display toaster notification for error
+                console.error(error); // Handle error if any
+                toast.error(error); // Display toaster notification for error
             }
         }
     ;
