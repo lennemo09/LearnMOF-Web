@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from bson import ObjectId
 from flask import jsonify, request, send_from_directory
@@ -14,10 +15,33 @@ from main.schemas.inference import UpdateProcessImage
 metadata_df = None
 image_ids_list = []
 
+# Add a dictionary to store progress for different processes
+inference_progress = {}
+prepare_data_progress = {}
+
+@app.get("/inference_progress/<process_id>")
+def get_inference_progress(process_id):
+    return jsonify({"progress": inference_progress.get(process_id, 0)})
+
+@app.get("/prepare_data_progress/<process_id>")
+def get_prepare_data_progress(process_id):
+    return jsonify({"progress": prepare_data_progress.get(process_id, 0)})
+
+@app.get("/get_inference_process_id")
+def get_inference_process_id():
+    process_id = str(uuid.uuid4())  # Generate a unique ID for this inference process
+    return jsonify({"process_id": process_id})
+
+
 @app.route("/upload", methods=["POST"])
 def upload():
     images = request.files.getlist("images")
     metadata_file = request.files.get("metadata")
+    process_id = request.form.get('process_id')
+
+    print("Received formData", request)
+
+    print("Uploading images with process id:", process_id)
 
     if not images and not metadata_file:
         return "No files selected", 400
@@ -29,17 +53,18 @@ def upload():
         metadata_df = get_metadata_from_csv(metadata_file)
 
     image_paths = []
-    for file in images:
+    for file_num, file in enumerate(images):
         # Check if the file has a filename
         if file.filename == "":
             return "One or more files have no filename", 400
 
         file_path = UPLOAD_FOLDER + "/" + file.filename
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
         # Check if the file is a zip file
         if file.filename.endswith(".zip"):
             # Save the zip file to the upload folder
-            new_paths = handle_zip_file(file, file_path)
+            new_paths = handle_zip_file(file, file_path, process_id, prepare_data_progress)
             if new_paths:
                 image_paths.extend(new_paths)
 
@@ -48,19 +73,32 @@ def upload():
             image_path = handle_jpg_file(file, file_path)
             image_paths.append(image_path)
 
+            # Update progress for this process
+            # TODO: Handle when the upload contains both ZIP and JPG files
+            prepare_data_progress[process_id] = (file_num + 1) / len(images) * 100
+
+    # Remove progress entry once the inference is complete
+    del prepare_data_progress[process_id]
+
     return jsonify({"image_paths": image_paths})
 
 
 @app.post("/process_images")
 @parse_args_with(UpdateProcessImage)
 def process_images(args: UpdateProcessImage):
-    predicted_classes_list, probabilities_list = perform_reference(args.image_paths)
+    inference_progress[args.process_id] = 0  # Initialize progress
+    predicted_classes_list, probabilities_list = perform_reference(args.image_paths, args.process_id, inference_progress)
     image_ids = update_inference_to_db(
         args.image_paths, predicted_classes_list, probabilities_list, metadata_df
     )
     print(f"predicted_classes_list {predicted_classes_list}")
     print(f"probabilities_list: {probabilities_list}")
-    return jsonify(image_ids)
+
+    # Remove progress entry once the inference is complete
+    del inference_progress[args.process_id]
+
+    # After starting the inference process, return the process ID
+    return jsonify({"image_ids": image_ids, "process_id": args.process_id})
 
 
 @app.route("/update_approval/<string:db_id>", methods=["POST"])

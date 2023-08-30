@@ -36,7 +36,7 @@ class ImageDataset(Dataset):
         return image, image_path
 
 
-def perform_reference(image_paths):
+def perform_reference(image_paths, process_id = None, inference_progress_dict = None):
     # Load images from the UPLOADS_DIR or any other appropriate directory
 
     # Perform inference on the images using PyTorch model
@@ -49,11 +49,9 @@ def perform_reference(image_paths):
     predicted_classes_list = []
     probabilities_list = []
 
-    batch_count = 0
     # Iterate over the batches in the dataloader
-    for images, image_paths_batch in dataloader:
-        print(f"Processing batch {batch_count}/{len(dataloader)}")
-        batch_count += 1
+    for batch_num, (images, image_paths_batch) in enumerate(dataloader):
+        print(f"Processing batch {batch_num}/{len(dataloader)}")
         # Perform inference on the batch of images using your model
         with torch.no_grad():
             images = images.to(device)
@@ -67,6 +65,10 @@ def perform_reference(image_paths):
         predicted_classes_list.extend(predicted_classes_batch.tolist())
         probabilities_list.extend(probabilities_batch.tolist())
 
+        if process_id is not None and inference_progress_dict is not None:
+            # Update progress for this process
+            inference_progress_dict[process_id] = int((batch_num + 1) / len(dataloader) * 100)
+        
     return predicted_classes_list, probabilities_list
 
 

@@ -33,7 +33,7 @@ def handle_jpg_file(file, file_path):
         file.save(file_path)
         return file_path
     else:
-        temp_dir = "temp"
+        temp_dir = "temp/temp_jpg"
         os.makedirs(temp_dir, exist_ok=True)
         file_path = f"{temp_dir}/{os.path.basename(file_path)}"
         file.save(file_path)
@@ -42,19 +42,24 @@ def handle_jpg_file(file, file_path):
         return new_path
 
 
-def handle_zip_file(file, file_path):
+def handle_zip_file(file, file_path, process_id=None, prepare_data_progress=None):
     # Save the zip file to the upload folder
     file.save(file_path)
 
     # Get the base filename from the file path
     filename = os.path.basename(file_path)
 
+    if process_id is not None:
+        temp_dir = f"temp/{process_id}"
+    else:
+        temp_dir = "temp"
+
     # Get the filename without the extension
     filename_without_extension = os.path.splitext(filename)[0]
     print(f"Extracting Zip file: {filename_without_extension}")
     # Extract the zip file
     with zipfile.ZipFile(file_path, "r") as zip_ref:
-        zip_ref.extractall("temp")
+        zip_ref.extractall(temp_dir)
 
     # Check if the filename matches the pattern
     match = re.match(ZIP_FILE_PATTERN, filename_without_extension)
@@ -78,8 +83,8 @@ def handle_zip_file(file, file_path):
 
         return new_image_files
 
-    extracted_files = os.listdir("temp")
-    found_image_files = search_for_images("temp")
+    extracted_files = os.listdir(temp_dir)
+    found_image_files = search_for_images(temp_dir)
 
     # Raise an error if no image files are found
     if not found_image_files:
@@ -88,8 +93,8 @@ def handle_zip_file(file, file_path):
     print("Moving files to upload folder")
     # Move the image files to the UPLOAD_FOLDER directory
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-    for image_file in found_image_files:
-        print(image_file)
+    for file_num, image_file in enumerate(found_image_files):
+        print(image_file, process_id, prepare_data_progress)
         # if not extracted_file_path.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
         #     continue
         # print(image_file)
@@ -116,6 +121,11 @@ def handle_zip_file(file, file_path):
             )
         image_paths.append(destination_path)
         shutil.move(image_file, destination_path)
+
+        if process_id is not None and prepare_data_progress is not None:
+            # Update progress for this process
+            print(f"Updating data prep progress: {(file_num + 1) / len(found_image_files) * 100}")
+            prepare_data_progress[process_id] = (file_num + 1) / len(found_image_files) * 100
     return image_paths
 
 
