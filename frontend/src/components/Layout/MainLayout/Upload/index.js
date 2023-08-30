@@ -54,7 +54,7 @@ function FileUpload() {
                     onUploadProgress: (progressEvent) => {
                         const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                         // Update your progress indicator here, e.g., setUploadProgress(progress);
-                        console.log(`Upload Progress: ${progress}%`);
+                        // console.log(`Upload Progress: ${progress}%`);
                         setUploadProgress(progress);
                     }
                 });
