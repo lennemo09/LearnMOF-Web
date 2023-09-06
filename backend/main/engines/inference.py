@@ -68,7 +68,8 @@ def perform_reference(image_paths, process_id = None, inference_progress_dict = 
         if process_id is not None and inference_progress_dict is not None:
             # Update progress for this process
             inference_progress_dict[process_id] = int((batch_num + 1) / len(dataloader) * 100)
-        
+    inference_progress_dict[process_id] = 100
+    
     return predicted_classes_list, probabilities_list
 
 

@@ -8,9 +8,52 @@ from PIL import Image
 
 from main import app
 from main.enums import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
+from main.engines.inference import perform_reference, update_inference_to_db
 
 ZIP_FILE_PATTERN = r"^\d{8}-(\d*)-(\d*)x$"
 
+def handle_uploaded_files(images, image_paths, process_id, metadata_df, inference_progress, prepare_data_progress):
+    image_paths = []
+    for file_num, file in enumerate(images):
+        # Check if the file has a filename
+        if file.filename == "":
+            return "One or more files have no filename", 400
+
+        file_path = UPLOAD_FOLDER + "/" + file.filename
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        # Check if the file is a zip file
+        if file.filename.endswith(".zip"):
+            # Save the zip file to the upload folder
+            new_paths = handle_zip_file(file, file_path, process_id, prepare_data_progress)
+            if new_paths:
+                image_paths.extend(new_paths)
+
+        elif file.filename.endswith(".jpg"):
+            # Name clashing for jpg uploads
+            image_path = handle_jpg_file(file, file_path)
+            image_paths.append(image_path)
+
+            # Update progress for this process
+            # TODO: Handle when the upload contains both ZIP and JPG files
+            prepare_data_progress[process_id] = (file_num + 1) / len(images) * 100
+
+    # Remove progress entry once the inference is complete
+    del prepare_data_progress[process_id]
+
+    process_images(process_id, image_paths, metadata_df, inference_progress)
+
+def process_images(process_id, image_paths, metadata_df, inference_progress):
+    inference_progress[process_id] = 0  # Initialize progress
+    predicted_classes_list, probabilities_list = perform_reference(image_paths, process_id, inference_progress)
+
+    image_ids = update_inference_to_db(image_paths, predicted_classes_list, probabilities_list, metadata_df)
+
+    print(f"predicted_classes_list {predicted_classes_list}")
+    print(f"probabilities_list: {probabilities_list}")
+
+    # Remove progress entry once the inference is complete
+    del inference_progress[process_id]
 
 def get_metadata_from_csv(metadata_file):
     metadata_df = pd.read_csv(metadata_file)
@@ -126,6 +169,9 @@ def handle_zip_file(file, file_path, process_id=None, prepare_data_progress=None
             # Update progress for this process
             print(f"Updating data prep progress: {(file_num + 1) / len(found_image_files) * 100}")
             prepare_data_progress[process_id] = (file_num + 1) / len(found_image_files) * 100
+
+    # Remove the zip file
+    shutil.rmtree(temp_dir)
     return image_paths
 
 

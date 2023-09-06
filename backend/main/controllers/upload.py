@@ -1,5 +1,6 @@
 import os
 import uuid
+import multiprocessing
 
 from bson import ObjectId
 from flask import jsonify, request, send_from_directory
@@ -7,37 +8,42 @@ from flask import jsonify, request, send_from_directory
 from main import app, collection
 from main.commons.decorators import parse_args_with
 from main.engines.inference import perform_reference, update_inference_to_db
-from main.engines.upload import get_metadata_from_csv, handle_jpg_file, handle_zip_file
+from main.engines.upload import get_metadata_from_csv, handle_jpg_file, handle_zip_file, process_images, handle_uploaded_files
 from main.enums import UPLOAD_FOLDER
 from main.schemas.browse import GetFilteredImagesSchema, UpdateApproval
 from main.schemas.inference import UpdateProcessImage
+
 
 metadata_df = None
 image_ids_list = []
 
 # Add a dictionary to store progress for different processes
-inference_progress = {}
-prepare_data_progress = {}
+manager = multiprocessing.Manager()
+inference_progress = manager.dict()
+prepare_data_progress = manager.dict()
 
 @app.get("/inference_progress/<process_id>")
 def get_inference_progress(process_id):
-    return jsonify({"progress": inference_progress.get(process_id, 0)})
+    return jsonify({"progress": inference_progress.get(process_id, -1)})
 
 @app.get("/prepare_data_progress/<process_id>")
 def get_prepare_data_progress(process_id):
-    return jsonify({"progress": prepare_data_progress.get(process_id, 0)})
+    # print("prepare_data_progress", prepare_data_progress)
+    return jsonify({"progress": prepare_data_progress.get(process_id, -1)})
 
-@app.get("/get_inference_process_id")
-def get_inference_process_id():
-    process_id = str(uuid.uuid4())  # Generate a unique ID for this inference process
-    return jsonify({"process_id": process_id})
-
+@app.get("/get_session_token")
+def get_session_token():
+    session_token = str(uuid.uuid4())  # Generate a unique ID for this session
+    return jsonify({"session_token": session_token})
 
 @app.route("/upload", methods=["POST"])
 def upload():
     images = request.files.getlist("images")
     metadata_file = request.files.get("metadata")
     process_id = request.form.get('process_id')
+
+    inference_progress[process_id] = 0  # Initialize progress
+    prepare_data_progress[process_id] = 0  # Initialize progress
 
     print("Received formData", request)
 
@@ -53,39 +59,17 @@ def upload():
         metadata_df = get_metadata_from_csv(metadata_file)
 
     image_paths = []
-    for file_num, file in enumerate(images):
-        # Check if the file has a filename
-        if file.filename == "":
-            return "One or more files have no filename", 400
 
-        file_path = UPLOAD_FOLDER + "/" + file.filename
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    # Start image processing procedure as a background process
+    process = multiprocessing.Process(target=handle_uploaded_files, args=(images, image_paths, process_id, metadata_df, inference_progress, prepare_data_progress))
+    process.start()
 
-        # Check if the file is a zip file
-        if file.filename.endswith(".zip"):
-            # Save the zip file to the upload folder
-            new_paths = handle_zip_file(file, file_path, process_id, prepare_data_progress)
-            if new_paths:
-                image_paths.extend(new_paths)
-
-        elif file.filename.endswith(".jpg"):
-            # Name clashing for jpg uploads
-            image_path = handle_jpg_file(file, file_path)
-            image_paths.append(image_path)
-
-            # Update progress for this process
-            # TODO: Handle when the upload contains both ZIP and JPG files
-            prepare_data_progress[process_id] = (file_num + 1) / len(images) * 100
-
-    # Remove progress entry once the inference is complete
-    del prepare_data_progress[process_id]
-
-    return jsonify({"image_paths": image_paths})
+    return jsonify({"process_id": process_id})
 
 
 @app.post("/process_images")
 @parse_args_with(UpdateProcessImage)
-def process_images(args: UpdateProcessImage):
+def process_images_old(args: UpdateProcessImage):
     inference_progress[args.process_id] = 0  # Initialize progress
     predicted_classes_list, probabilities_list = perform_reference(args.image_paths, args.process_id, inference_progress)
     image_ids = update_inference_to_db(
