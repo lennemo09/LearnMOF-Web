@@ -155,6 +155,13 @@ def update_metadata(image_name, metadata_df):
 
         row = metadata_df.iloc[row_index]
 
+        if row['real_idx'] != '':
+            real_idx = row["real_idx"]
+            year = int(real_idx[:4])
+            month = int(real_idx[4:6])
+            day = int(real_idx[6:8])
+            plate_index = int(real_idx[8:10])
+
         newvalues = {
             "$set": {
                 "linker": row["acronym"],
