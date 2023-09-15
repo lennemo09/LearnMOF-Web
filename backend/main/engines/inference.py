@@ -135,9 +135,15 @@ def update_metadata(image_name, metadata_df):
         image_index = int(re.match(r"position(\d*).jpg", image_name).group(1))
         magnification = None
     elif re.match(r"^\d{8}-(\d*)-(\d*)x_position(\d*).jpg$", image_name):
-        match = re.match(r"^\d{8}-(\d*)-(\d*)x_position(\d*).jpg$", image_name)
-        image_index = int(match.group(3))
-        magnification = int(match.group(2))
+        match = re.match(r"^(\d{4})(\d{2})(\d{2})-(\d*)-(\d*)x_position(\d*).jpg$", image_name)
+        year = int(match.group(1))
+        month = int(match.group(2))
+        day = int(match.group(3))
+        plate_index = int(match.group(4))
+        magnification = int(match.group(5))
+
+        image_index = int(match.group(6))
+        
     else:
         image_index = None
 
@@ -148,12 +154,6 @@ def update_metadata(image_name, metadata_df):
         row_index = int(np.ceil(well_index / WELLS_PER_ROW)) - 1
 
         row = metadata_df.iloc[row_index]
-
-        real_idx = row["real_idx"]
-        year = int(real_idx[:4])
-        month = int(real_idx[4:6])
-        day = int(real_idx[6:8])
-        plate_index = int(real_idx[8:10])
 
         newvalues = {
             "$set": {
