@@ -11,6 +11,7 @@ function ImageDetails({match}) {
     const [imageDetails, setImageDetails] = useState(null);
     const [previousImageId, setPreviousImageId] = useState(null); // Define the state
     const [nextImageId, setNextImageId] = useState(null); // Define the state
+    const [selectedLabel, setSelectedLabel] = useState('crystal');
 
     const history = useHistory();
 
@@ -21,6 +22,7 @@ function ImageDetails({match}) {
                 .then(response => {
                     const {data} = response;
                     setImageDetails(data);
+                    setSelectedLabel(data.predicted_class);
                 })
                 .catch(error => {
                     console.error(error);
@@ -52,7 +54,7 @@ function ImageDetails({match}) {
 
     }, [image_url]);
 
-    const [selectedLabel, setSelectedLabel] = useState('crystal');
+    
 
     const goToPreviousImage = () => {
         if (previousImageId) {
@@ -189,6 +191,7 @@ function ImageDetails({match}) {
             <select
                 value={selectedLabel}
                 onChange={(e) => setSelectedLabel(e.target.value)}
+                defaultValue={selectedLabel}
             >
                 <option value="crystal">crystal</option>
                 <option value="challenging_crystal">challenging crystal</option>
