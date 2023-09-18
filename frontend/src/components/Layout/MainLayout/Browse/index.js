@@ -64,6 +64,7 @@ export default function Browse() {
         <div>
             <h1 style={{marginTop: '20px', textAlign: 'center'}}>Database</h1>
             <FilterBar/>
+            <div className='images-count'> <p>Found {images.length} images matching filter.</p> </div>
             <div className='browse-content'>
                 {images.length > 0 ? (
                         images.map((image) => (
