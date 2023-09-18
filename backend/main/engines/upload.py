@@ -62,11 +62,11 @@ def get_metadata_from_csv(metadata_file):
     metadata_df.dropna(how="all", inplace=True)
 
     # metadata_df["real_idx"] = metadata_df["real_idx"].astype("int")
-    metadata_df["well1"] = metadata_df["well1"].astype("int")
-    metadata_df["well2"] = metadata_df["well2"].astype("int")
-    metadata_df["well3"] = metadata_df["well3"].astype("int")
-    metadata_df["well4"] = metadata_df["well4"].astype("int")
-    metadata_df["real_idx"] = metadata_df["real_idx"].astype("str")
+    metadata_df["well1"] = metadata_df["well1"].astype("int") if metadata_df["well1"] is not None else None
+    metadata_df["well2"] = metadata_df["well2"].astype("int") if metadata_df["well1"] is not None else None
+    metadata_df["well3"] = metadata_df["well3"].astype("int") if metadata_df["well1"] is not None else None
+    metadata_df["well4"] = metadata_df["well4"].astype("int") if metadata_df["well1"] is not None else None
+    metadata_df["real_idx"] = metadata_df["real_idx"].astype("str") if metadata_df["well1"] is not None else ""
 
     return metadata_df
 
