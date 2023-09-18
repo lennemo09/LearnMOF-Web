@@ -98,7 +98,20 @@
 }
 
 .filter-bar{
+  justify-content: start;
+}
+
+.filter-bar-attributes{
   display: flex;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  justify-content: start;
+}
+
+.filter-bar-date{
+  display: flex;
+  padding-top: 10px;
+  padding-bottom: 10px;
   justify-content: start;
 }
 

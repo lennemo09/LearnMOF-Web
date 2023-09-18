@@ -14,18 +14,38 @@ export default function Browse() {
     const image_ids = queryParams.getAll('image_ids');
 
 
-    // console.log(image_ids)
-    const approved = queryParams.get("approved")
-    const assignedLabel = queryParams.get("assigned_label")
-
+    const approved = queryParams.get("approved");
+    const assignedLabel = queryParams.get("assigned_label");
+    const linker = queryParams.get("linker");
+    const magnification = queryParams.get("magnification");
+    const reactionTime = queryParams.get("reaction_time");
+    const temperature = queryParams.get("temperature");
+    const year = queryParams.get("year");
+    const month = queryParams.get("month");
+    const day = queryParams.get("day");
+    
     useEffect(() => {
         fetchImages();
     }, [location.search]);
-
-
+    
+    
     const fetchImages = () => {
+        const params = {
+            approved: approved, 
+            image_ids: image_ids, 
+            assigned_label:assignedLabel,
+            linker:linker,
+            magnification:magnification ? parseInt(magnification) : null,
+            reaction_time:reactionTime ? parseInt(reactionTime) : null,
+            temperature:temperature ? parseInt(temperature) : null,
+            start_date_year: year ? year : null,
+            start_date_month: month ? month : null,
+            start_date_day: day ? day : null,
+        }
+        console.log(params)
         axios
-            .get('/api/browse', {params: {approved: approved, image_ids: image_ids, assigned_label:assignedLabel}, paramsSerializer: {indexes: null}})
+            .get('/api/browse', {params: params, 
+                                paramsSerializer: {indexes: null}})
             .then((response) => {
                 setImages(response.data);
                 console.log(response.data)

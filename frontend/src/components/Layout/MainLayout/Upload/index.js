@@ -107,8 +107,6 @@ function FileUpload() {
                     }
                 }).then((response) => {setUploadSuccess(true)});
 
-                console.log(uploadResponse.data); // Handle the response from the backend
-
                 // if (uploadProgress.data)
                 // {
                 //     setUploadSuccess(true);

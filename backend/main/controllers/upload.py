@@ -121,6 +121,7 @@ def browse(args: GetFilteredImagesSchema):
         image_ids = [ObjectId(id) for id in args.image_ids]
         entries = collection.find({"_id": {"$in": image_ids}})
     else:
+        print(args.dict(exclude_none=True))
         entries = collection.find(args.dict(exclude_none=True))
 
     images = []
