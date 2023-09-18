@@ -38,9 +38,9 @@ export default function Browse() {
             magnification:magnification ? parseInt(magnification) : null,
             reaction_time:reactionTime ? parseInt(reactionTime) : null,
             temperature:temperature ? parseInt(temperature) : null,
-            start_date_year: year ? year : null,
-            start_date_month: month ? month : null,
-            start_date_day: day ? day : null,
+            start_date_year: year ? parseInt(year) : null,
+            start_date_month: month ? parseInt(month) : null,
+            start_date_day: day ? parseInt(day) : null,
         }
         console.log(params)
         axios

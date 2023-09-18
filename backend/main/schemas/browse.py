@@ -11,9 +11,9 @@ class GetFilteredImagesSchema(BaseSchema):
     reaction_time: int | None
     temperature: int | None
     linker: str | None
-    year: str | None
-    month: str | None
-    day: str | None
+    year: int | None
+    month: int | None
+    day: int | None
 
 
 class UpdateApproval(BaseModel):
