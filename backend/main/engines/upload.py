@@ -190,7 +190,7 @@ def rename_image_with_suffix(image_file, destination_dir):
                     f"Image with name exists {filename} with different content, renaming to {new_filename}."
                 )
                 new_destination_path = destination_dir + "/" + new_filename
-                if not os.path.exists(new_destination_path):
+                if not os.path.exists(new_destination_path) and not is_same_image(image_file, new_destination_path):
                     break
                 suffix += 1
 
