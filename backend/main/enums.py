@@ -48,6 +48,7 @@ RESULTS_DIR = "results"
 MODEL_PATH = MODEL_DIR + "/" + MODEL_NAME
 
 UPLOAD_FOLDER = "static/images"
+THUMBNAIL_FOLDER = "static/images_thumbnails"
 
 
 SEED = 1337
