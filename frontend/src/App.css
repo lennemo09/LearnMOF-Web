@@ -139,3 +139,24 @@
   padding: 4px 8px; /* Padding to give some space around the text */
   border-radius: 5px; /* Rounded corners */
 }
+
+.delete-confirmation-overlay {
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.delete-confirmation-content {
+  margin: 45vh auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 5px;
+  width: 30%;
+  position: relative;
+  transition: all 5s ease-in-out;
+}

@@ -213,6 +213,36 @@ def result_from_db(db_id):
 def get_all_image_ids():
     return jsonify(image_ids_list)
 
+@app.route('/remove_image/<image_id>', methods=['DELETE'])
+def remove_image(image_id):
+    try:
+        # Retrieve the MongoDB document by image_id
+        image_doc = collection.find_one({'_id': ObjectId(image_id)})
+
+        if not image_doc:
+            print(f"Error deleting image with id {image_id}, image not found in db.")
+            return 'Image not found', 404
+
+        # Extract the image_name from the document
+        image_name = image_doc.get('image_name')
+
+        # Delete the image file from UPLOAD_FOLDER
+        image_path = os.path.join(UPLOAD_FOLDER, image_name)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+
+        # Remove the MongoDB document
+        result = collection.delete_one({'_id': ObjectId(image_id)})
+
+        if result.deleted_count == 1:
+            return 'Image deleted successfully'
+        else:
+            return 'Failed to delete image', 500
+
+    except Exception as e:
+        return str(e), 500
+
+
 @app.route('/filter_unique_values')
 def get_unique_values():
 

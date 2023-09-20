@@ -7,6 +7,10 @@ import {toast, ToastContainer} from 'react-toastify';
 
 export default function Browse() {
     const [images, setImages] = useState([]);
+
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false); // Step 2
+    const [imageToDelete, setImageToDelete] = useState(null);
+
     const history = useHistory();
 
     const location = useLocation();
@@ -60,6 +64,40 @@ export default function Browse() {
         history.push(`/browse/${db_id}`);
     };
 
+    const handleDeleteImage = (db_id) => {
+        // Call the API to delete the image here
+        axios
+          .delete(`/api/remove_image/${db_id}`)
+          .then((response) => {
+            // Handle success, e.g., remove the image from the state
+            const updatedImages = images.filter((image) => image.db_id !== db_id);
+            setImages(updatedImages);
+            toast.success('Image deleted successfully.');
+          })
+          .catch((error) => {
+            console.error(error);
+            toast.error('Error deleting image.');
+          });
+      };
+    
+      const handleShowDeleteConfirmation = (db_id) => {
+        setImageToDelete(db_id);
+        setShowDeleteConfirmation(true);
+      };
+    
+      const handleConfirmDelete = () => {
+        if (imageToDelete) {
+          handleDeleteImage(imageToDelete);
+          setImageToDelete(null);
+        }
+        setShowDeleteConfirmation(false);
+      };
+    
+      const handleCancelDelete = () => {
+        setImageToDelete(null);
+        setShowDeleteConfirmation(false);
+      };
+
     return (
         <div>
             <h1 style={{marginTop: '20px', textAlign: 'center'}}>Database</h1>
@@ -97,6 +135,12 @@ export default function Browse() {
                                             </p>
                                         </div>
                                     </div>
+                                    <button
+                                        style={{ backgroundColor: 'red', color: 'white' }}
+                                        onClick={() => handleShowDeleteConfirmation(image.db_id)} // Step 4
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             )
                         )
@@ -107,6 +151,18 @@ export default function Browse() {
                 }
             </div>
             <ToastContainer/>
+
+            {/* Confirmation popup */}
+            {showDeleteConfirmation && (
+                <div className="delete-confirmation-overlay">
+                    <div className='delete-confirmation-content'>
+                        <p>Are you sure you want to delete this image?</p>
+                        <button onClick={handleConfirmDelete}>Yes</button>
+                        <button onClick={handleCancelDelete}>No</button>
+                    </div>
+                </div>
+            )}
+
         </div>
     )
         ;
