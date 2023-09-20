@@ -49,8 +49,10 @@ def process_images(process_id, image_paths, metadata_df, inference_progress):
 
     image_ids = update_inference_to_db(image_paths, predicted_classes_list, probabilities_list, metadata_df)
 
+    print(f"###### PROCESS_ID: {process_id} ######")
     print(f"predicted_classes_list {predicted_classes_list}")
     print(f"probabilities_list: {probabilities_list}")
+    print("###################################################")
 
     # Remove progress entry once the inference is complete
     del inference_progress[process_id]
@@ -99,7 +101,9 @@ def handle_zip_file(file, file_path, process_id=None, prepare_data_progress=None
 
     # Get the filename without the extension
     filename_without_extension = os.path.splitext(filename)[0]
+    print(f"###### PROCESS_ID: {process_id} ######")
     print(f"Extracting Zip file: {filename_without_extension}")
+    print("###################################################")
     # Extract the zip file
     with zipfile.ZipFile(file_path, "r") as zip_ref:
         zip_ref.extractall(temp_dir)
@@ -133,7 +137,10 @@ def handle_zip_file(file, file_path, process_id=None, prepare_data_progress=None
     if not found_image_files:
         return "Zip file does not contain any images", 400
 
+    print(f"###### PROCESS_ID: {process_id} ######")
     print("Moving files to upload folder")
+    print("###################################################")
+
     # Move the image files to the UPLOAD_FOLDER directory
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     for file_num, image_file in enumerate(found_image_files):
@@ -167,7 +174,9 @@ def handle_zip_file(file, file_path, process_id=None, prepare_data_progress=None
 
         if process_id is not None and prepare_data_progress is not None:
             # Update progress for this process
+            print(f"###### PROCESS_ID: {process_id} ######")
             print(f"Updating data prep progress: {(file_num + 1) / len(found_image_files) * 100}")
+            print("###################################################")
             prepare_data_progress[process_id] = (file_num + 1) / len(found_image_files) * 100
 
     # Remove the zip file

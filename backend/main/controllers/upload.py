@@ -45,10 +45,11 @@ def upload():
     inference_progress[process_id] = 0  # Initialize progress
     prepare_data_progress[process_id] = 0  # Initialize progress
 
+    print(f"###### PROCESS_ID: {process_id} ######")
     print("Received formData", request)
 
     print("Uploading images with process id:", process_id)
-
+    print("###################################################")
     if not images and not metadata_file:
         return "No files selected", 400
 
@@ -110,7 +111,7 @@ def update_approval(db_id, args: UpdateApproval, **__):
 @app.route("/<path:filename>")
 def uploaded_image(filename):
     directory = os.path.abspath(os.path.join(app.root_path, os.pardir))
-    print(f"file_name {filename}")
+    # print(f"file_name {filename}")
     return send_from_directory(directory, filename)
 
 
@@ -121,7 +122,6 @@ def browse(args: GetFilteredImagesSchema):
         image_ids = [ObjectId(id) for id in args.image_ids]
         entries = collection.find({"_id": {"$in": image_ids}})
     else:
-        print(args.dict(exclude_none=True))
         entries = collection.find(args.dict(exclude_none=True))
 
     images = []
@@ -158,9 +158,9 @@ def result_from_db(db_id):
     predicted_class = result_document["assigned_label"]
     probabilities = result_document["probabilities"]
 
-    print(
-        f"Image {file_path}: Predicted class: {predicted_class} with probabilities: {probabilities}."
-    )
+    # print(
+    #     f"Image {file_path}: Predicted class: {predicted_class} with probabilities: {probabilities}."
+    # )
 
     result = {
         "image_path": file_path,
