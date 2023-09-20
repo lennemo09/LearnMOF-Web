@@ -131,3 +131,11 @@
 .images-count {
   color: #555;
 }
+
+.code-filename {
+  font-size: 0.85em; /* Smaller font size */
+  background-color: #414141; /* Dark gray background color */
+  color: #fff; /* White text color */
+  padding: 4px 8px; /* Padding to give some space around the text */
+  border-radius: 5px; /* Rounded corners */
+}

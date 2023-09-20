@@ -189,6 +189,14 @@ function FileUpload() {
     return (
         <div>
             <div>
+                <h3>Upload Images and Metadata</h3>
+                <p>If you're uploading a ZIP file of images, please use the following naming format to ensure the metadata are parsed correctly:</p>
+                <p><code class="code-filename">(yyyymmdd)-(plateindex)-(magnification)x.zip</code> e.g. <code class="code-filename">20230530-20-400x.zip</code></p>
+
+                <p>If you're uploading a metadata file, make sure it includes the following columns (in exact order):</p>
+                <p><code class="code-filename"> temp,time,linker_idx,acronym,ctot,loglmratio,well1,well2,well3,well4,real_idx  </code></p>
+            </div>
+            <div>
                 <label htmlFor="images">Select Images: </label>
                 <input type="file" id="images" multiple onChange={handleFileUpload}/>
             </div>
