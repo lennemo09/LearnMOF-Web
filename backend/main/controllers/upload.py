@@ -129,6 +129,7 @@ def browse(args: GetFilteredImagesSchema):
         image_data = {
             "db_id": str(entry["_id"]),
             "image_path": entry.get("image_path", ""),
+            "thumbnail_path": entry.get("thumbnail_path", ""),
             "image_name": entry.get("image_name", ""),
             "approved": entry.get("approved", ""),
             "assigned_label": entry.get("assigned_label", ""),

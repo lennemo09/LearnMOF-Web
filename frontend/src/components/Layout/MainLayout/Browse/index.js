@@ -139,7 +139,7 @@ export default function Browse() {
                                 >
                                     <div onClick={() => handleClickImage(image.db_id)}>
                                         <img
-                                            src={`/api/${image.image_path}`}
+                                            src={`/api/${image.thumbnail_path ? image.thumbnail_path : image.image_path}`}
                                             alt={image.image_name}
                                             style={{width: '100%'}}
                                         />
