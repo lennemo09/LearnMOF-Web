@@ -74,25 +74,36 @@
     font-weight: bold;
 }
 
-.approve-button {
+.approve-button-small,
+.tentative-button-small {
+    margin: 0;
+    padding: 10px 5px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.approve-button, .approve-button-small {
     background-color: transparent;
     color: #00bf06;
     border: 2px solid #00bf06; /* Green border */
 }
 
-.tentative-button {
+.tentative-button, .tentative-button-small {
     background-color: transparent;
     color: #ff7b00;
     border: 2px solid #ff7b00; /* Orange border */
 }
   
 /* Change the background and border color on hover */
-.approve-button:hover {
+.approve-button:hover, .approve-button-small:hover {
     background-color: rgba(0, 255, 8, 0.1); /* Light green background on hover */
     border-color: #00bf06; /* Green border color on hover */
 }
 
-.tentative-button:hover {
+.tentative-button:hover, .tentative-button-small:hover {
   background-color: rgba(255, 132, 0, 0.1); /* Light green background on hover */
   border-color: #ff7b00; /* Green border color on hover */
 }
@@ -159,4 +170,32 @@
   width: 30%;
   position: relative;
   transition: all 5s ease-in-out;
+}
+
+.delete-button {
+  margin: 0;
+  padding: 5px 5px;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #ff0000;
+  border: 2px solid #ff0000; /* Green border */
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.delete-button:hover {
+  margin: 0;
+  padding: 5px 5px;
+  border-radius: 8px;
+  background-color: #ff0000;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.browse-buttons-container {
+  display: flex;
+}
+.browse-buttons-filler {
+  flex: auto;
 }

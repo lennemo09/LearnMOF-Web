@@ -46,13 +46,11 @@ export default function Browse() {
             start_date_month: month ? parseInt(month) : null,
             start_date_day: day ? parseInt(day) : null,
         }
-        console.log(params)
         axios
             .get('/api/browse', {params: params, 
                                 paramsSerializer: {indexes: null}})
             .then((response) => {
                 setImages(response.data);
-                console.log(response.data)
             })
             .catch((error) => {
                 console.error(error);
@@ -79,24 +77,47 @@ export default function Browse() {
             toast.error('Error deleting image.');
           });
       };
-    
-      const handleShowDeleteConfirmation = (db_id) => {
-        setImageToDelete(db_id);
-        setShowDeleteConfirmation(true);
-      };
-    
-      const handleConfirmDelete = () => {
-        if (imageToDelete) {
-          handleDeleteImage(imageToDelete);
-          setImageToDelete(null);
-        }
-        setShowDeleteConfirmation(false);
-      };
-    
-      const handleCancelDelete = () => {
+
+    const handleApproveImage = (db_id, assigned_label, approved) => {
+        const requestData = {
+            approved: approved,
+            label: assigned_label
+        };
+
+        axios
+            .post(`/api/update_approval/${db_id}`, requestData)
+            .then((response) => {
+                const updatedImages = images.map((image) => {
+                    if (image.db_id == db_id) {
+                        image.approved = approved;
+                    }
+                    return image;
+                });
+                setImages(updatedImages);
+                toast.success('Image approval updated successfully.');
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    const handleShowDeleteConfirmation = (db_id) => {
+    setImageToDelete(db_id);
+    setShowDeleteConfirmation(true);
+    };
+
+    const handleConfirmDelete = () => {
+    if (imageToDelete) {
+        handleDeleteImage(imageToDelete);
         setImageToDelete(null);
-        setShowDeleteConfirmation(false);
-      };
+    }
+    setShowDeleteConfirmation(false);
+    };
+
+    const handleCancelDelete = () => {
+    setImageToDelete(null);
+    setShowDeleteConfirmation(false);
+    };
 
     return (
         <div>
@@ -135,12 +156,34 @@ export default function Browse() {
                                             </p>
                                         </div>
                                     </div>
-                                    <button
-                                        style={{ backgroundColor: 'red', color: 'white' }}
-                                        onClick={() => handleShowDeleteConfirmation(image.db_id)} // Step 4
-                                    >
-                                        Delete
-                                    </button>
+
+                                    <div className="browse-buttons-container"> 
+                                        <span className='approval-buttons-container'>
+                                            <button
+                                                className="approve-button-small"
+                                                onClick={() => handleApproveImage(image.db_id, image.assigned_label, true)} // Step 4
+                                            >
+                                                Approve
+                                            </button>
+                                            
+                                            <button
+                                                className="tentative-button-small"
+                                                onClick={() => handleApproveImage(image.db_id, image.assigned_label, false)} // Step 4
+                                            >
+                                                Tentative
+                                            </button>
+                                        </span>
+                                        
+                                        <span className='browse-buttons-filler'></span>
+
+                                        <span className='delete-button-container'> </span>
+                                        <button
+                                            className="delete-button"
+                                            onClick={() => handleShowDeleteConfirmation(image.db_id)} // Step 4
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             )
                         )
